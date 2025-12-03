@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tentang Kami | Smart Traffic Vision</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        background-color: #000;
+        color: #fff;
+        font-family: 'Poppins', sans-serif;
+        padding-top: 80px;
+      }
+
+      .navbar {
+        backdrop-filter: blur(10px);
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+
+      .card {
+        background-color: rgba(25, 25, 25, 0.9);
+        border: none;
+        border-radius: 16px;
+        color: #fff;
+      }
+
+      h1, h2, h4 {
+        font-weight: 600;
+      }
+
+      footer {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        color: #aaa;
+      }
+
+      .highlight {
+        color: #0dcaf0;
+      }
+
+      .team-member img {
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid #0dcaf0;
+      }
+
+      .team-member h5 {
+        margin-top: 10px;
+        font-weight: 600;
+      }
+
+      .team-member p {
+        font-size: 0.9rem;
+        color: #ccc;
+      }
+
+      .btn-outline-light:hover {
+        background-color: #0dcaf0;
+        color: #000;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navMenu">
+          <ul class="navbar-nav me-3">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('static_page') }}">Statik & Analitik</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('read_artikel') }}">Artikel</a></li>
+            <li class="nav-item"><a class="nav-link active" href="{{ url_for('about') }}">Tentang Kami</a></li>
+          </ul>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-light rounded-pill btn-sm">Sign In</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="container py-5">
+      <section class="text-center mb-5">
+        <h1 class="fw-bold mb-3"><span class="highlight">Tentang</span> Smart Traffic Vision</h1>
+        <p class="text-secondary mx-auto" style="max-width: 800px;">
+          Smart Traffic Vision adalah platform cerdas berbasis real-time dan machine learning
+          untuk memantau kepadatan lalu lintas dan mendeteksi kecelakaan.
+          Kami hadir untuk mendukung mobilitas perkotaan yang lebih aman, efisien, dan berkelanjutan.
+        </p>
+      </section>
+
+      <!-- VISI MISI -->
+      <section class="row g-4 mb-5">
+        <div class="col-md-6">
+          <div class="card p-4 shadow-sm h-100">
+            <h4 class="mb-3 highlight">Visi Kami</h4>
+            <p>
+              Menjadi solusi inovatif berbasis teknologi AI yang mampu mengurangi kemacetan
+              dan angka kecelakaan di seluruh kota melalui pemantauan cerdas dan analitik lalu lintas.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card p-4 shadow-sm h-100">
+            <h4 class="mb-3 highlight">Misi Kami</h4>
+            <ul>
+              <li>Mengembangkan sistem deteksi lalu lintas berbasis video dan machine learning.</li>
+              <li>Menyediakan analisis data real-time untuk pengambilan keputusan transportasi.</li>
+              <li>Berinovasi dalam teknologi berbasis citra digital dan kecerdasan buatan.</li>
+              <li>Mendukung smart city dan keberlanjutan lingkungan.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEAM -->
+      <section class="text-center">
+        <h2 class="fw-bold mb-4">Tim Pengembang</h2>
+        <div class="row justify-content-center g-4">
+          <div class="col-md-3 col-sm-6">
+            <div class="team-member">
+              <img src="{{ url_for('static', filename='images/4.png') }}" alt="Anggota Tim 1">
+              <h5>Nadhif Nur Fathin</h5>
+              <p>AI Engineer & Vision Specialist</p>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <div class="team-member">
+              <img src="{{ url_for('static', filename='images/1.png') }}" alt="Anggota Tim 2">
+              <h5>Fajrina Nurhaliza</h5>
+              <p>Web Developer & UI Designer</p>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <div class="team-member">
+              <img src="{{ url_for('static', filename='images/2.png') }}" alt="Anggota Tim 3">
+              <h5>Bening Cahya Aura</h5>
+              <p>Data Scientist & Analyst</p>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <div class="team-member">
+              <img src="{{ url_for('static', filename='images/3.png') }}" alt="Anggota Tim 4">
+              <h5>Muhammad Fariz Al Fattah</h5>
+              <p>Cloud Engineer & System Integrator</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="text-center py-4 mt-5">
+      <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+    </footer>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
