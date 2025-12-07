@@ -40,6 +40,7 @@ def login_required(f):
     return decorated
 
 # ===== DECORATOR UNTUK OTENTIKASI API =====
+# Ini hanya akan digunakan untuk API yang benar-benar memerlukan login admin (misal: CRUD artikel admin)
 def api_login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -51,19 +52,24 @@ def api_login_required(f):
 # ===== ROUTES WEB (Render HTML) =====
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Mengambil artikel terbaru yang dipublish untuk landing page
+    cursor = get_db_cursor()
+    cursor.execute("SELECT id, judul, isi, gambar, tanggal FROM artikel WHERE published=1 ORDER BY tanggal DESC LIMIT 5")
+    latest_articles = cursor.fetchall()
+    cursor.close()
+    return render_template('index.html', latest_articles=latest_articles)
+
 
 @app.route('/dashboard')
 def dashboard():
-    # Data untuk dashboard web akan tetap diambil dari mock atau API internal
-    # Jika Anda ingin ini mengambil data dari API yang sama dengan mobile,
-    # Anda bisa membuat permintaan internal atau langsung mengolah data di sini.
-    # Untuk saat ini, kita akan fokus pada tampilan.
     cursor = get_db_cursor()
-    cursor.execute("SELECT * FROM artikel WHERE published=1 ORDER BY tanggal DESC LIMIT 5")
-    data = cursor.fetchall()
+    # Hanya ambil artikel yang published untuk dashboard publik
+    cursor.execute("SELECT id, judul, gambar, tanggal FROM artikel WHERE published=1 ORDER BY tanggal DESC LIMIT 3")
+    latest_articles = cursor.fetchall()
     cursor.close()
-    return render_template('dashboard.html', artikel=data)
+
+    # Data ringkasan dan CCTV akan diambil via JavaScript (API non-admin)
+    return render_template('dashboard.html', latest_articles=latest_articles)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -88,10 +94,24 @@ def logout():
 @login_required
 def admin_dashboard():
     cursor = get_db_cursor()
-    cursor.execute("SELECT * FROM artikel ORDER BY tanggal DESC")
-    data = cursor.fetchall()
+    # Ambil artikel terbaru untuk ditampilkan di admin dashboard
+    cursor.execute("SELECT id, judul, gambar, tanggal FROM artikel ORDER BY tanggal DESC LIMIT 3")
+    latest_articles = cursor.fetchall()
     cursor.close()
-    return render_template('admin_dashboard.html', artikel=data)
+    return render_template('admin_dashboard.html', latest_articles=latest_articles)
+
+# Di app.py
+@app.route('/artikel/<int:id>')
+def view_artikel_detail(id):
+    cursor = get_db_cursor()
+    cursor.execute("SELECT id, judul, isi, gambar, tanggal FROM artikel WHERE id=%s AND published=1", (id,))
+    artikel = cursor.fetchone()
+    cursor.close()
+    if artikel:
+        return render_template('artikel_detail.html', artikel=artikel)
+    else:
+        flash("Artikel tidak ditemukan atau belum dipublikasikan.", "danger")
+        return redirect(url_for('read_artikel'))
 
 @app.route('/artikel/tambah', methods=['GET', 'POST'])
 @login_required
@@ -108,8 +128,8 @@ def tambah_artikel():
         
         cursor = get_db_cursor()
         cursor.execute(
-            "INSERT INTO artikel (judul, isi, gambar, published) VALUES (%s, %s, %s, %s)",
-            (judul, isi, filename, 0)
+            "INSERT INTO artikel (judul, isi, gambar, published, tanggal) VALUES (%s, %s, %s, %s, %s)",
+            (judul, isi, filename, 0, datetime.datetime.now()) # Tambahkan datetime.datetime.now()
         )
         db.commit()
         cursor.close()
@@ -130,15 +150,16 @@ def kelola_artikel():
     total_articles = cursor.fetchone()['total']
     total_pages = (total_articles + per_page - 1) // per_page
 
-    cursor.execute("SELECT * FROM artikel ORDER BY tanggal DESC LIMIT %s OFFSET %s", (per_page, offset))
+    cursor.execute("SELECT id, judul, isi, gambar, published, tanggal FROM artikel ORDER BY tanggal DESC LIMIT %s OFFSET %s", (per_page, offset))
     data = cursor.fetchall()
     cursor.close()
-    return render_template('kelola_artikel.html', artikel=data, page=page, total_pages=total_pages)
+    return render_template('kelola_artikel.html', artikel=data, page=page, total_pages=total_pages, per_page=per_page)
 
 @app.route('/read_artikel')
 def read_artikel():
     cursor = get_db_cursor()
-    cursor.execute("SELECT * FROM artikel WHERE published=1 ORDER BY tanggal DESC")
+    # Pastikan hanya artikel yang dipublikasikan (published=1) yang ditampilkan
+    cursor.execute("SELECT id, judul, isi, gambar, tanggal FROM artikel WHERE published=1 ORDER BY tanggal DESC")
     data = cursor.fetchall()
     cursor.close()
     return render_template('read_artikel.html', artikel=data)
@@ -224,26 +245,39 @@ def cctv_page():
     return render_template('cctv.html') # Halaman ini sekarang akan menampilkan peta CCTV
 
 # =========================================================================
-# ===== API ENDPOINTS FOR MOBILE APP (Returns JSON) =====
+# ===== API ENDPOINTS FOR MOBILE APP & PUBLIC DASHBOARD (Returns JSON) =====
 # =========================================================================
 
-@app.route('/api/admin/login', methods=['POST'])
-def api_admin_login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+# API Ringkasan Dashboard Publik (TIDAK PERLU LOGIN ADMIN)
+@app.route('/api/public/dashboard_summary', methods=['GET'])
+def api_public_dashboard_summary():
+    # Ini masih mock data, Anda bisa menggantinya dengan data nyata dari database/sensor
+    summary = {
+        "kendaraan_hari_ini": "2.431",
+        "kepadatan_tertinggi": "65%", # Contoh data
+        "rata_rata_kecepatan": "43 km/j",
+        "kamera_aktif": "12"
+    }
+    return jsonify(summary), 200
 
-    if username == "admin" and password == "12345":
-        session['user'] = 'admin'
-        return jsonify({"message": "Login successful", "user": "admin"}), 200
-    else:
-        return jsonify({"message": "Invalid credentials"}), 401
+# API Tren Kepadatan Lalu Lintas Publik (TIDAK PERLU LOGIN ADMIN)
+@app.route('/api/public/traffic_data', methods=['GET'])
+def api_public_traffic_data():
+    traffic_data = {
+        "labels": ['06:00','08:00','10:00','12:00','14:00','16:00','18:00'],
+        "kepadatan": [35,60,75,50,65,80,55]
+    }
+    return jsonify(traffic_data), 200
 
-@app.route('/api/admin/logout', methods=['POST'])
-@api_login_required
-def api_admin_logout():
-    session.pop('user', None)
-    return jsonify({"message": "Logout successful"}), 200
+# API Distribusi Jenis Kendaraan Publik (TIDAK PERLU LOGIN ADMIN)
+@app.route('/api/public/vehicle_distribution', methods=['GET'])
+def api_public_vehicle_distribution():
+    vehicle_data = {
+        "labels": ['Mobil','Motor','Bus','Truk'],
+        "data": [55,30,8,7]
+    }
+    return jsonify(vehicle_data), 200
+
 
 @app.route('/api/articles', methods=['GET'])
 def get_published_articles():
@@ -256,7 +290,10 @@ def get_published_articles():
                 article['gambar_url'] = url_for('static', filename='uploads/' + article['gambar'], _external=True)
             else:
                 article['gambar_url'] = None
-            article['tanggal'] = article['tanggal'].strftime('%Y-%m-%d %H:%M:%S')
+            if article['tanggal']:
+                article['tanggal'] = article['tanggal'].strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                article['tanggal'] = None
         return jsonify(articles), 200
     except Exception as e:
         return jsonify({"message": f"Error fetching articles: {str(e)}"}), 500
@@ -274,7 +311,10 @@ def get_article_detail(article_id):
                 article['gambar_url'] = url_for('static', filename='uploads/' + article['gambar'], _external=True)
             else:
                 article['gambar_url'] = None
-            article['tanggal'] = article['tanggal'].strftime('%Y-%m-%d %H:%M:%S')
+            if article['tanggal']:
+                article['tanggal'] = article['tanggal'].strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                article['tanggal'] = None
             return jsonify(article), 200
         else:
             return jsonify({"message": "Article not found or not published"}), 404
@@ -283,12 +323,13 @@ def get_article_detail(article_id):
     finally:
         cursor.close()
 
+# API Admin (membutuhkan login admin)
 @app.route('/api/admin/dashboard_summary', methods=['GET'])
 @api_login_required
 def api_admin_dashboard_summary():
     summary = {
         "kendaraan_hari_ini": "2.431",
-        "kepadatan_tertinggi": "87%",
+        "kepadatan_tertinggi": "87%", # Data admin, bisa berbeda
         "rata_rata_kecepatan": "43 km/j",
         "kamera_aktif": "12"
     }
@@ -362,21 +403,21 @@ def api_analytics_accident_count(period):
     else:
         return jsonify({"message": "Invalid period"}), 400
 
-# API untuk data lokasi CCTV (baru, agar mobile bisa mengambil data ini)
+# API untuk data lokasi CCTV (publik, TIDAK PERLU LOGIN ADMIN)
 @app.route('/api/cctv_locations', methods=['GET'])
 def get_cctv_locations():
     # Ini adalah data mock untuk lokasi CCTV di Jawa Tengah
     cctv_locations = [
-        { "id": 1, "name": "CCTV Semarang (Simpang Lima)", "lat": -6.9832, "lon": 110.4093, "status": "Aktif", "last_update": "2024-05-15 10:30:00" },
-        { "id": 2, "name": "CCTV Solo (Gladag)", "lat": -7.5684, "lon": 110.8291, "status": "Aktif", "last_update": "2024-05-15 10:32:15" },
-        { "id": 3, "name": "CCTV Yogyakarta (Malioboro)", "lat": -7.7925, "lon": 110.3659, "status": "Aktif", "last_update": "2024-05-15 10:35:00" },
-        { "id": 4, "name": "CCTV Magelang (Alun-alun)", "lat": -7.4727, "lon": 110.2188, "status": "Tidak Aktif", "last_update": "2024-05-15 09:00:00" },
-        { "id": 5, "name": "CCTV Tegal (Perempatan Maya)", "lat": -6.8778, "lon": 109.1418, "status": "Aktif", "last_update": "2024-05-15 10:28:40" },
-        { "id": 6, "name": "CCTV Purwokerto (Bundaran)", "lat": -7.4243, "lon": 109.2201, "status": "Aktif", "last_update": "2024-05-15 10:31:00" },
-        { "id": 7, "name": "CCTV Kudus (Simpang Tujuh)", "lat": -6.8048, "lon": 110.8351, "status": "Aktif", "last_update": "2024-05-15 10:34:00" },
-        { "id": 8, "name": "CCTV Pekalongan (Pantai Pasir Kencana)", "lat": -6.8624, "lon": 109.6587, "status": "Aktif", "last_update": "2024-05-15 10:29:10" },
-        { "id": 9, "name": "CCTV Salatiga (Bundaran Tamansari)", "lat": -7.3323, "lon": 110.4965, "status": "Aktif", "last_update": "2024-05-15 10:36:20" },
-        { "id": 10, "name": "CCTV Cilacap (Bundaran)", "lat": -7.6908, "lon": 109.0270, "status": "Tidak Aktif", "last_update": "2024-05-15 08:45:00" }
+        { "id": 1, "name": "CCTV Semarang (Simpang Lima)", "lat": -6.9832, "lon": 110.4093, "status": "Aktif", "last_update": "2024-05-15 10:30:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" }, # Contoh URL stream
+        { "id": 2, "name": "CCTV Solo (Gladag)", "lat": -7.5684, "lon": 110.8291, "status": "Aktif", "last_update": "2024-05-15 10:32:15", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
+        { "id": 3, "name": "CCTV Yogyakarta (Malioboro)", "lat": -7.7925, "lon": 110.3659, "status": "Aktif", "last_update": "2024-05-15 10:35:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_3mb.mp4" },
+        { "id": 4, "name": "CCTV Magelang (Alun-alun)", "lat": -7.4727, "lon": 110.2188, "status": "Tidak Aktif", "last_update": "2024-05-15 09:00:00", "stream_url": None },
+        { "id": 5, "name": "CCTV Tegal (Perempatan Maya)", "lat": -6.8778, "lon": 109.1418, "status": "Aktif", "last_update": "2024-05-15 10:28:40", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" },
+        { "id": 6, "name": "CCTV Purwokerto (Bundaran)", "lat": -7.4243, "lon": 109.2201, "status": "Aktif", "last_update": "2024-05-15 10:31:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
+        { "id": 7, "name": "CCTV Kudus (Simpang Tujuh)", "lat": -6.8048, "lon": 110.8351, "status": "Aktif", "last_update": "2024-05-15 10:34:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_3mb.mp4" },
+        { "id": 8, "name": "CCTV Pekalongan (Pantai Pasir Kencana)", "lat": -6.8624, "lon": 109.6587, "status": "Aktif", "last_update": "2024-05-15 10:29:10", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" },
+        { "id": 9, "name": "CCTV Salatiga (Bundaran Tamansari)", "lat": -7.3323, "lon": 110.4965, "status": "Aktif", "last_update": "2024-05-15 10:36:20", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
+        { "id": 10, "name": "CCTV Cilacap (Bundaran)", "lat": -7.6908, "lon": 109.0270, "status": "Tidak Aktif", "last_update": "2024-05-15 08:45:00", "stream_url": None }
     ]
     return jsonify(cctv_locations), 200
 
