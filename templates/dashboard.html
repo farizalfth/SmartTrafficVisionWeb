@@ -5,210 +5,426 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard | Smart Traffic Vision</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Ikon & Style -->
+    <!-- Lucide Icons (untuk ikon) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
       body {
         background-color: #000000 !important;
-        color: #fff;
+        color: #e0e0e0;
         font-family: 'Poppins', sans-serif;
         margin: 0;
-        padding-top: 70px;
+        padding-top: 70px; /* Offset for fixed-top navbar */
       }
 
-      /* Navbar transparan kaca blur (seperti index.html) */
+      /* Navbar disesuaikan agar lebih mirip Flutter */
       .navbar {
-        backdrop-filter: blur(10px);
-        background-color: rgba(0, 0, 0, 0.3) !important;
+        background-color: #1a1a1a !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
       }
-
-      .navbar .nav-link.active {
-        color: #fff !important;
+      .navbar-brand {
+        font-weight: 700;
+        color: #0dcaf0 !important;
+      }
+      .navbar-nav .nav-link {
+        color: #e0e0e0 !important;
+        font-weight: 500;
+        margin-right: 15px;
+        transition: color 0.2s ease;
+      }
+      .navbar-nav .nav-link:hover,
+      .navbar-nav .nav-link.active {
+        color: #0dcaf0 !important;
+      }
+      .btn-outline-light {
+        color: #0dcaf0;
+        border-color: #0dcaf0;
         font-weight: 600;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+      .btn-outline-light:hover {
+        background-color: #0dcaf0;
+        color: #1a1a1a;
       }
 
-      /* Kartu */
-      .card {
-        background: rgba(20, 20, 20, 0.8) !important;
-        border: none;
-        color: #fff;
+      /* Card styles */
+      .info-card, .chart-card, .cctv-live-feed, .artikel-card {
+        background-color: #1a1a1a;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%; /* Penting untuk konsistensi tinggi dalam flex/grid */
+      }
+      .info-card:hover, .chart-card:hover, .artikel-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      }
+      .info-card h6 {
+        color: #b0b0b0;
+        font-weight: 500;
+      }
+      .info-card h2 {
+        font-weight: 700;
+        margin-top: 8px; /* Lebih sedikit margin atas untuk h2 */
+      }
+      .info-card .icon-wrapper {
+        background-color: #333333;
+        border-radius: 50%;
+        padding: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+      .chart-card h5, .cctv-live-feed h5, .artikel-card h5 {
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 20px;
       }
 
+      /* Live CCTV Section */
+      .cctv-placeholder {
+        width: 100%;
+        height: 300px; /* Tinggi tetap untuk placeholder CCTV */
+        background-color: #333;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #b0b0b0;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+      }
+
+      /* Artikel Terbaru */
+      .artikel-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #333; /* Pemisah antar artikel */
+      }
+      .artikel-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      .artikel-item img {
+        width: 80px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+        flex-shrink: 0;
+      }
+      .artikel-item .text-content h6 {
+        margin: 0;
+        font-weight: 600;
+        color: #0dcaf0;
+        font-size: 1rem; /* Ukuran font yang lebih nyaman */
+      }
+      .artikel-item .text-content p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #b0b0b0;
+      }
+
+      /* Chart Specific Styling */
+      .chart-container {
+          position: relative;
+          height: 300px; /* Tinggi tetap untuk setiap container chart */
+          width: 100%;
+          margin-bottom: 15px;
+      }
+      .chart-container canvas {
+          width: 100% !important;
+          height: 100% !important;
+      }
+      .chart-card .btn-outline-info {
+          border-color: #0dcaf0;
+          color: #0dcaf0;
+          transition: background-color 0.2s ease, color 0.2s ease;
+      }
+      .chart-card .btn-outline-info.active,
+      .chart-card .btn-outline-info:hover {
+          background-color: #0dcaf0;
+          color: #1a1a1a;
+      }
+
+
+      /* Footer */
       footer {
-        background-color: #000;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        color: #bbb;
-        font-size: 0.9rem;
-      }
-
-      canvas {
-        width: 100% !important;
+        background-color: #1a1a1a;
+        color: #888;
+        font-size: 0.85rem;
+        padding: 20px 0;
+        border-top: 1px solid #333;
+        margin-top: 50px; /* Jarak dari konten utama */
       }
     </style>
   </head>
 
-  <body class="text-white">
+  <body>
 
     <!-- ===== NAVBAR ===== -->
-    <header class="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent">
+    <header class="navbar navbar-expand-lg navbar-dark fixed-top">
       <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <a class="navbar-brand" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navMenu">
-          <ul class="navbar-nav me-3">
-            <li class="nav-item"><a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('static_page') }}">Statik & Analitik</a></li>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('static_page') }}">Statistik & Analitik</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('read_artikel') }}">Artikel</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">Tentang Kami</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('cctv_page') }}">Peta CCTV</a></li>
           </ul>
-          <a href="{{ url_for('login') }}" class="btn btn-outline-light rounded-pill btn-sm">Sign In</a>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-light rounded-pill ms-lg-3">Login Admin</a>
         </div>
       </div>
     </header>
 
     <!-- ===== DASHBOARD CONTENT ===== -->
-    <main class="container-fluid mt-5 pt-4 px-4">
+    <main class="container-fluid mt-4 px-4">
+      <h2 class="fw-bold mb-4 text-center text-white">Ringkasan Lalu Lintas Real-time</h2>
 
-      <!-- HEADER -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="fw-bold">Dashboard Lalu Lintas</h2>
-          <p class="text-secondary mb-0">Pantau kondisi lalu lintas secara real-time dan analisis kepadatan.</p>
-        </div>
-        <div class="text-end">
-          <button class="btn btn-primary rounded-pill px-3" onclick="location.reload()">
-            <i data-lucide="refresh-ccw"></i> Refresh
-          </button>
-        </div>
-      </div>
-
-      <!-- CARD INFO -->
-      <div class="row g-4 mb-5">
+      <!-- Card Info Row -->
+      <div class="row g-4 mb-4">
         <div class="col-md-3">
-          <div class="card rounded-4 p-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="fw-semibold mb-0 text-secondary">Kendaraan Hari Ini</h6>
-                <h2 class="fw-bold mt-2">2.431</h2>
-              </div>
-              <i data-lucide="car" class="text-warning" style="width:40px;height:40px;"></i>
+          <div class="info-card d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-0">Total Kendaraan Hari Ini</h6>
+              <h2 class="mt-2 text-warning">2.431</h2>
+            </div>
+            <div class="icon-wrapper">
+              <i data-lucide="car" class="text-warning" style="width:30px;height:30px;"></i>
             </div>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="card rounded-4 p-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="fw-semibold mb-0 text-secondary">Kepadatan Tertinggi</h6>
-                <h2 class="fw-bold mt-2 text-danger">87%</h2>
-              </div>
-              <i data-lucide="alert-triangle" class="text-danger" style="width:40px;height:40px;"></i>
+          <div class="info-card d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-0">Rata-rata Kepadatan</h6>
+              <h2 class="mt-2 text-danger">65%</h2>
+            </div>
+            <div class="icon-wrapper">
+              <i data-lucide="traffic-cone" class="text-danger" style="width:30px;height:30px;"></i>
             </div>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="card rounded-4 p-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="fw-semibold mb-0 text-secondary">Rata-rata Kecepatan</h6>
-                <h2 class="fw-bold mt-2 text-info">43 km/j</h2>
-              </div>
-              <i data-lucide="gauge" class="text-info" style="width:40px;height:40px;"></i>
+          <div class="info-card d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-0">Rata-rata Kecepatan</h6>
+              <h2 class="mt-2 text-info">43 km/j</h2>
+            </div>
+            <div class="icon-wrapper">
+              <i data-lucide="gauge" class="text-info" style="width:30px;height:30px;"></i>
             </div>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="card rounded-4 p-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="fw-semibold mb-0 text-secondary">Kamera Aktif</h6>
-                <h2 class="fw-bold mt-2 text-success">12</h2>
-              </div>
-              <i data-lucide="camera" class="text-success" style="width:40px;height:40px;"></i>
+          <div class="info-card d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-0">Kamera CCTV Aktif</h6>
+              <h2 class="mt-2 text-success">12</h2>
+            </div>
+            <div class="icon-wrapper">
+              <i data-lucide="camera" class="text-success" style="width:30px;height:30px;"></i>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- CHARTS -->
+      <!-- Live Feed & Articles / Charts Row -->
       <div class="row g-4">
-        <div class="col-lg-8">
-          <div class="card rounded-4 p-4 h-100">
-            <h5 class="fw-semibold mb-3">Grafik Kepadatan Lalu Lintas (Hari Ini)</h5>
-            <canvas id="trafficChart" style="height: 320px !important;"></canvas>
+        <div class="col-lg-7">
+          <div class="cctv-live-feed">
+            <h5 class="mb-3">Live Feed CCTV Utama</h5>
+            <div class="cctv-placeholder">
+              Video Stream CCTV
+              <!-- Di sini Anda bisa menempatkan iframe atau video player nyata -->
+            </div>
+            <div class="d-flex justify-content-around flex-wrap mt-3"> <!-- flex-wrap untuk responsif -->
+                <small class="text-muted text-center mx-2">No Bokorehhd</small>
+                <small class="text-muted text-center mx-2">Mirong Old Net</small>
+                <small class="text-muted text-center mx-2">Malas Kdt Cil</small>
+            </div>
           </div>
         </div>
 
-        <div class="col-lg-4">
-          <div class="card rounded-4 p-4 h-100">
-            <h5 class="fw-semibold mb-3">Distribusi Jenis Kendaraan</h5>
-            <canvas id="vehicleChart" style="height: 320px !important;"></canvas>
+        <div class="col-lg-5">
+          <div class="artikel-card">
+            <h5 class="mb-3">Artikel Terbaru</h5>
+            {% if artikel %}
+              {% for a in artikel %}
+                <a href="#" class="artikel-item text-decoration-none">
+                  {% if a.gambar %}
+                    <img src="{{ url_for('static', filename='uploads/' + a.gambar) }}" alt="{{ a.judul }}">
+                  {% else %}
+                    <img src="https://via.placeholder.com/80x60?text=No+Image" alt="No Image">
+                  {% endif %}
+                  <div class="text-content">
+                    <h6>{{ a.judul }}</h6>
+                    <p>{{ a.tanggal.strftime('%d %b %Y') }}</p>
+                  </div>
+                </a>
+              {% endfor %}
+            {% else %}
+              <p class="text-center text-muted">Belum ada artikel yang dipublikasikan.</p>
+            {% endif %}
           </div>
         </div>
       </div>
+
+      <!-- Tren Kepadatan & Distribusi Kendaraan -->
+      <div class="row g-4 mt-4">
+        <div class="col-lg-7">
+          <div class="chart-card">
+            <h5 class="mb-3">Tren Kepadatan Lalu Lintas</h5>
+            <div class="chart-container">
+                <canvas id="trafficDensityChart"></canvas>
+            </div>
+            <div class="d-flex justify-content-center flex-wrap mt-3">
+                <button class="btn btn-sm btn-outline-info mx-1 active" onclick="updateTrafficChart('harian', this)">Hari Ini</button>
+                <button class="btn btn-sm btn-outline-info mx-1" onclick="updateTrafficChart('mingguan', this)">Minggu Ini</button>
+                <button class="btn btn-sm btn-outline-info mx-1" onclick="updateTrafficChart('bulanan', this)">Bulan Ini</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="chart-card">
+            <h5 class="mb-3">Distribusi Jenis Kendaraan</h5>
+            <div class="chart-container">
+                <canvas id="vehicleDistributionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
 
-    <!-- FOOTER -->
-    <footer class="text-center py-4 mt-5 text-secondary">
-      <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+    <!-- ===== FOOTER ===== -->
+    <footer class="text-center">
+      <div class="container">
+        <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+      </div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+      // Inisialisasi Lucide Icons
       lucide.createIcons();
 
-      // ===== Traffic Line Chart =====
-      const ctx1 = document.getElementById('trafficChart');
-      new Chart(ctx1, {
-        type: 'line',
-        data: {
-          labels: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00'],
-          datasets: [{
-            label: 'Kepadatan (%)',
-            data: [35, 60, 75, 50, 65, 80, 55],
-            borderColor: '#0dcaf0',
-            backgroundColor: 'rgba(13, 202, 240, 0.2)',
-            tension: 0.4,
-            fill: true,
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
-            x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }
+      // Data mock untuk grafik (sesuai dengan API Flask, jika ada)
+      const mockTrafficData = {
+          harian: { labels: ['06:00','08:00','10:00','12:00','14:00','16:00','18:00', '20:00', '22:00'], kepadatan: [35,60,75,50,65,80,55,70,45] },
+          mingguan: { labels: ['Sen','Sel','Rab','Kam','Jum','Sab','Min'], kepadatan: [55,65,70,60,75,80,50] },
+          bulanan: { labels: ['Minggu 1','Minggu 2','Minggu 3','Minggu 4'], kepadatan: [65,70,60,75] }
+      };
+
+      const mockVehicleData = {
+          labels: ['Mobil Pribadi','Sepeda Motor','Bus Umum','Truk Barang', 'Sepeda'],
+          data: [45, 30, 10, 8, 7]
+      };
+
+      // Chart Kepadatan Lalu Lintas
+      const trafficDensityCtx = document.getElementById('trafficDensityChart').getContext('2d');
+      let trafficDensityChart = new Chart(trafficDensityCtx, {
+          type: 'line',
+          data: {
+              labels: mockTrafficData.harian.labels,
+              datasets: [{
+                  label: 'Kepadatan (%)',
+                  data: mockTrafficData.harian.kepadatan,
+                  borderColor: '#0dcaf0',
+                  backgroundColor: 'rgba(13, 202, 240, 0.2)',
+                  fill: true,
+                  tension: 0.4
+              }]
           },
-          plugins: { legend: { labels: { color: '#fff' } } }
-        }
+          options: {
+              responsive: true,
+              maintainAspectRatio: false, // Penting agar chart mengisi container
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      max: 100, // Batas maksimal untuk kepadatan
+                      ticks: {
+                          color: '#e0e0e0',
+                          callback: function(value) { return value + '%'; } // Tambahkan simbol %
+                      },
+                      grid: { color: 'rgba(255,255,255,0.1)' }
+                  },
+                  x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+              },
+              plugins: {
+                  legend: { labels: { color: '#e0e0e0' } },
+                  tooltip: {
+                      callbacks: {
+                          label: function(context) {
+                              let label = context.dataset.label || '';
+                              if (label) { label += ': '; }
+                              if (context.parsed.y !== null) { label += context.parsed.y + '%'; }
+                              return label;
+                          }
+                      }
+                  }
+              }
+          }
       });
 
-      // ===== Vehicle Pie Chart =====
-      const ctx2 = document.getElementById('vehicleChart');
-      new Chart(ctx2, {
-        type: 'doughnut',
-        data: {
-          labels: ['Mobil', 'Motor', 'Bus', 'Truk'],
-          datasets: [{
-            data: [55, 30, 8, 7],
-            backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#dc3545'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          plugins: { legend: { labels: { color: '#fff' } } }
-        }
+      function updateTrafficChart(period, button) {
+          document.querySelectorAll('.btn-outline-info').forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+
+          trafficDensityChart.data.labels = mockTrafficData[period].labels;
+          trafficDensityChart.data.datasets[0].data = mockTrafficData[period].kepadatan;
+          trafficDensityChart.update();
+      }
+
+      // Chart Distribusi Jenis Kendaraan
+      const vehicleDistributionCtx = document.getElementById('vehicleDistributionChart').getContext('2d');
+      new Chart(vehicleDistributionCtx, {
+          type: 'doughnut',
+          data: {
+              labels: mockVehicleData.labels,
+              datasets: [{
+                  data: mockVehicleData.data,
+                  backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#dc3545', '#6c757d'], // Tambah warna
+                  hoverOffset: 8 // Sedikit lebih besar hover offset
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false, // Penting agar chart mengisi container
+              plugins: {
+                  legend: {
+                      position: 'right', // Pindahkan legend ke kanan
+                      labels: { color: '#e0e0e0', padding: 20 }
+                  },
+                  tooltip: {
+                      callbacks: {
+                          label: function(context) {
+                              let label = context.label || '';
+                              if (label) { label += ': '; }
+                              if (context.parsed !== null) { label += context.parsed + '%'; }
+                              return label;
+                          }
+                      }
+                  }
+              }
+          }
       });
     </script>
   </body>

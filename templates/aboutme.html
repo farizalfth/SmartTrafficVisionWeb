@@ -7,170 +7,183 @@
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
       body {
-        background-color: #000;
-        color: #fff;
+        background-color: #000000;
+        color: #e0e0e0;
         font-family: 'Poppins', sans-serif;
-        padding-top: 80px;
+        padding-top: 70px; /* Offset for fixed navbar */
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
+      /* Navbar disesuaikan agar lebih mirip Flutter */
       .navbar {
-        backdrop-filter: blur(10px);
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: #1a1a1a !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
       }
-
-      .card {
-        background-color: rgba(25, 25, 25, 0.9);
-        border: none;
-        border-radius: 16px;
-        color: #fff;
+      .navbar-brand {
+        font-weight: 700;
+        color: #0dcaf0 !important;
       }
-
-      h1, h2, h4 {
-        font-weight: 600;
+      .navbar-nav .nav-link {
+        color: #e0e0e0 !important;
+        font-weight: 500;
+        margin-right: 15px;
       }
-
-      footer {
-        border-top: 1px solid rgba(255,255,255,0.1);
-        color: #aaa;
+      .navbar-nav .nav-link:hover,
+      .navbar-nav .nav-link.active {
+        color: #0dcaf0 !important;
       }
-
-      .highlight {
+      .btn-outline-light {
         color: #0dcaf0;
-      }
-
-      .team-member img {
-        border-radius: 50%;
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border: 3px solid #0dcaf0;
-      }
-
-      .team-member h5 {
-        margin-top: 10px;
+        border-color: #0dcaf0;
         font-weight: 600;
       }
-
-      .team-member p {
-        font-size: 0.9rem;
-        color: #ccc;
-      }
-
       .btn-outline-light:hover {
         background-color: #0dcaf0;
-        color: #000;
+        color: #1a1a1a;
+      }
+
+      /* Main Content Section */
+      .about-section {
+        flex-grow: 1; /* Make this section take up available space */
+        padding: 60px 0;
+      }
+      .about-section h1 {
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      .about-card {
+        background-color: #1a1a1a;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .about-card h4 {
+        color: #0dcaf0;
+        font-weight: 600;
+        margin-top: 30px;
+        margin-bottom: 15px;
+      }
+      .about-card h4:first-child {
+        margin-top: 0;
+      }
+      .about-card p {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        margin-bottom: 15px;
+        color: #b0b0b0;
+      }
+      .about-card ul {
+        list-style-type: none;
+        padding-left: 0;
+      }
+      .about-card ul li {
+        margin-bottom: 10px;
+        color: #b0b0b0;
+      }
+      .about-card ul li strong {
+        color: #e0e0e0;
+      }
+
+
+      /* Footer */
+      footer {
+        background-color: #1a1a1a;
+        color: #888;
+        font-size: 0.85rem;
+        padding: 20px 0;
+        border-top: 1px solid #333;
+        margin-top: auto; /* Push footer to the bottom */
       }
     </style>
   </head>
 
   <body>
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <header class="navbar navbar-expand-lg navbar-dark fixed-top">
       <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <a class="navbar-brand" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
         </button>
-
-        <div class="collapse navbar-collapse justify-content-end" id="navMenu">
-          <ul class="navbar-nav me-3">
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('static_page') }}">Statik & Analitik</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('static_page') }}">Statistik & Analitik</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('read_artikel') }}">Artikel</a></li>
             <li class="nav-item"><a class="nav-link active" href="{{ url_for('about') }}">Tentang Kami</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('cctv_page') }}">Peta CCTV</a></li>
           </ul>
-          <a href="{{ url_for('login') }}" class="btn btn-outline-light rounded-pill btn-sm">Sign In</a>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-light rounded-pill ms-lg-3">Login Admin</a>
         </div>
       </div>
-    </nav>
+    </header>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <main class="container py-5">
-      <section class="text-center mb-5">
-        <h1 class="fw-bold mb-3"><span class="highlight">Tentang</span> Smart Traffic Vision</h1>
-        <p class="text-secondary mx-auto" style="max-width: 800px;">
-          Smart Traffic Vision adalah platform cerdas berbasis real-time dan machine learning
-          untuk memantau kepadatan lalu lintas dan mendeteksi kecelakaan.
-          Kami hadir untuk mendukung mobilitas perkotaan yang lebih aman, efisien, dan berkelanjutan.
-        </p>
-      </section>
+    <main class="about-section">
+      <div class="container">
+        <h1>Tentang Smart Traffic Vision</h1>
+        <div class="about-card">
+          <h4>Visi Kami</h4>
+          <p>
+            Menjadi pionir dalam solusi manajemen lalu lintas cerdas yang inovatif,
+            aman, dan efisien untuk kota-kota modern. Kami berkomitmen untuk mengurangi
+            kepadatan lalu lintas, meningkatkan keselamatan berkendara, dan memberikan
+            informasi real-time yang akurat kepada masyarakat.
+          </p>
 
-      <!-- VISI MISI -->
-      <section class="row g-4 mb-5">
-        <div class="col-md-6">
-          <div class="card p-4 shadow-sm h-100">
-            <h4 class="mb-3 highlight">Visi Kami</h4>
-            <p>
-              Menjadi solusi inovatif berbasis teknologi AI yang mampu mengurangi kemacetan
-              dan angka kecelakaan di seluruh kota melalui pemantauan cerdas dan analitik lalu lintas.
-            </p>
-          </div>
+          <h4>Misi Kami</h4>
+          <ul>
+            <li>Membangun sistem deteksi lalu lintas berbasis kecerdasan buatan.</li>
+            <li>Menyediakan data analisis lalu lintas yang mendalam dan mudah dipahami.</li>
+            <li>Mengembangkan platform yang responsif dan user-friendly untuk web dan mobile.</li>
+            <li>Berkolaborasi dengan pemerintah daerah dan komunitas untuk menciptakan lingkungan lalu lintas yang lebih baik.</li>
+          </ul>
+
+          <h4>Teknologi yang Kami Gunakan</h4>
+          <p>
+            Smart Traffic Vision dikembangkan menggunakan kombinasi teknologi canggih:
+          </p>
+          <ul>
+            <li><strong>Backend:</strong> Flask (Python) untuk RESTful API dan manajemen data.</li>
+            <li><strong>Frontend Web:</strong> HTML, CSS (Bootstrap 5), dan JavaScript (Leaflet.js, Chart.js) untuk antarmuka pengguna interaktif.</li>
+            <li><strong>Mobile App:</strong> Flutter untuk aplikasi Android dan iOS yang responsif.</li>
+            <li><strong>Database:</strong> MySQL untuk penyimpanan data yang efisien.</li>
+            <li><strong>Deteksi Objek:</strong> Algoritma AI untuk menganalisis video CCTV dan mendeteksi kepadatan lalu lintas.</li>
+          </ul>
+
+          <h4>Tim Kami</h4>
+          <p>
+            Kami adalah tim mahasiswa Teknik Informatika dari Kelompok 3 5B yang berdedikasi
+            untuk menciptakan solusi teknologi yang bermanfaat bagi masyarakat.
+          </p>
+          <ul>
+            <li><strong>Ketua Tim:</strong> [Nama Ketua Tim Anda]</li>
+            <li><strong>Anggota Tim:</strong> [Nama Anggota 1], [Nama Anggota 2], [Nama Anggota 3], dll.</li>
+            <li><strong>Dosen Pembimbing:</strong> [Nama Dosen Pembimbing]</li>
+          </ul>
         </div>
-
-        <div class="col-md-6">
-          <div class="card p-4 shadow-sm h-100">
-            <h4 class="mb-3 highlight">Misi Kami</h4>
-            <ul>
-              <li>Mengembangkan sistem deteksi lalu lintas berbasis video dan machine learning.</li>
-              <li>Menyediakan analisis data real-time untuk pengambilan keputusan transportasi.</li>
-              <li>Berinovasi dalam teknologi berbasis citra digital dan kecerdasan buatan.</li>
-              <li>Mendukung smart city dan keberlanjutan lingkungan.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- TEAM -->
-      <section class="text-center">
-        <h2 class="fw-bold mb-4">Tim Pengembang</h2>
-        <div class="row justify-content-center g-4">
-          <div class="col-md-3 col-sm-6">
-            <div class="team-member">
-              <img src="{{ url_for('static', filename='images/4.png') }}" alt="Anggota Tim 1">
-              <h5>Nadhif Nur Fathin</h5>
-              <p>AI Engineer & Vision Specialist</p>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <div class="team-member">
-              <img src="{{ url_for('static', filename='images/1.png') }}" alt="Anggota Tim 2">
-              <h5>Fajrina Nurhaliza</h5>
-              <p>Web Developer & UI Designer</p>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <div class="team-member">
-              <img src="{{ url_for('static', filename='images/2.png') }}" alt="Anggota Tim 3">
-              <h5>Bening Cahya Aura</h5>
-              <p>Data Scientist & Analyst</p>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <div class="team-member">
-              <img src="{{ url_for('static', filename='images/3.png') }}" alt="Anggota Tim 4">
-              <h5>Muhammad Fariz Al Fattah</h5>
-              <p>Cloud Engineer & System Integrator</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     </main>
 
     <!-- ===== FOOTER ===== -->
-    <footer class="text-center py-4 mt-5">
-      <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+    <footer class="text-center">
+      <div class="container">
+        <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+      </div>
     </footer>
 
-    <!-- ===== SCRIPTS ===== -->
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
