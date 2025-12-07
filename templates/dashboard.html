@@ -137,10 +137,11 @@
             color: #b0b0b0;
             margin-bottom: 8px;
         }
+        /* Style for both iframe and video (if using video for fallback) */
         .video-stream-card iframe, .video-stream-card video {
             width: 100%;
             flex-grow: 1;
-            max-height: 300px;
+            max-height: 300px; /* Consistent height for player */
             border-radius: 10px;
             border: none;
             background-color: #000;
@@ -318,7 +319,8 @@
                         </select>
                     </div>
                     <div id="videoPlayerContainer" class="w-100 flex-grow-1 d-flex align-items-center justify-content-center">
-                        <video id="mainCCTVPlayer" controls class="d-none"></video>
+                        <!-- Perubahan di sini: Mengganti <video> dengan <iframe> -->
+                        <iframe id="mainCCTVPlayer" class="d-none" width="100%" height="300" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         <div id="cctvPlaceholder" class="video-stream-placeholder">
                             Pilih CCTV untuk melihat streaming.
                         </div>
@@ -336,7 +338,7 @@
                     {% if latest_articles %}
                         <div class="list-group list-group-flush">
                             {% for article in latest_articles %}
-                            <a href="#" class="list-group-item list-group-item-action">
+                            <a href="{{ url_for('view_artikel_detail', id=article.id) }}" class="list-group-item list-group-item-action">
                                 {% if article.gambar %}
                                     <img src="{{ url_for('static', filename='uploads/' + article.gambar) }}" alt="{{ article.judul }}">
                                 {% else %}
@@ -413,10 +415,11 @@
                     return response.json();
                 })
                 .then(data => {
+                    const canvas = document.getElementById('trafficCongestionChart');
+                    const ctx = canvas.getContext('2d');
+
                     if (!data.labels || !data.kepadatan || data.labels.length === 0 || data.labels.length !== data.kepadatan.length) {
                         console.warn('Invalid or incomplete traffic congestion data:', data);
-                        const canvas = document.getElementById('trafficCongestionChart');
-                        const ctx = canvas.getContext('2d');
                         ctx.font = '16px Poppins';
                         ctx.fillStyle = '#e0e0e0';
                         ctx.textAlign = 'center';
@@ -424,7 +427,6 @@
                         return;
                     }
 
-                    const ctx = document.getElementById('trafficCongestionChart').getContext('2d');
                     new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -493,10 +495,11 @@
                     return response.json();
                 })
                 .then(data => {
+                    const canvas = document.getElementById('vehicleDistributionChart');
+                    const ctx = canvas.getContext('2d');
+
                     if (!data.labels || !data.data || data.labels.length === 0 || data.labels.length !== data.data.length) {
                         console.warn('Invalid or incomplete vehicle distribution data:', data);
-                        const canvas = document.getElementById('vehicleDistributionChart');
-                        const ctx = canvas.getContext('2d');
                         ctx.font = '16px Poppins';
                         ctx.fillStyle = '#e0e0e0';
                         ctx.textAlign = 'center';
@@ -504,7 +507,6 @@
                         return;
                     }
 
-                    const ctx = document.getElementById('vehicleDistributionChart').getContext('2d');
                     const backgroundColors = [
                         '#0dcaf0', // Biru
                         '#ffc107', // Kuning
@@ -533,8 +535,7 @@
                                     labels: {
                                         color: '#e0e0e0'
                                     }
-                                }
-                                ,
+                                },
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
@@ -560,6 +561,7 @@
 
             // --- CCTV Live Feed Logic (Public API) ---
             const cctvSelect = document.getElementById('cctvSelect');
+            // Pastikan ini mereferensikan iframe
             const mainCCTVPlayer = document.getElementById('mainCCTVPlayer');
             const cctvPlaceholder = document.getElementById('cctvPlaceholder');
 
@@ -585,8 +587,23 @@
                         const option = document.createElement('option');
                         option.value = cctv.stream_url || '';
                         option.innerText = cctv.name + (cctv.status === 'Tidak Aktif' ? ' (Tidak Aktif)' : '');
+                        // Nonaktifkan opsi jika tidak aktif atau tidak ada URL stream
                         option.disabled = (cctv.status === 'Tidak Aktif' || !cctv.stream_url);
                         cctvSelect.appendChild(option);
+                    });
+
+                    cctvSelect.addEventListener('change', function() {
+                        const selectedStreamUrl = this.value;
+                        if (selectedStreamUrl) {
+                            mainCCTVPlayer.src = selectedStreamUrl;
+                            mainCCTVPlayer.classList.remove('d-none');
+                            cctvPlaceholder.classList.add('d-none');
+                            // Hapus mainCCTVPlayer.load() dan mainCCTVPlayer.play()
+                        } else {
+                            mainCCTVPlayer.src = ''; // Bersihkan src iframe
+                            mainCCTVPlayer.classList.add('d-none');
+                            cctvPlaceholder.classList.remove('d-none');
+                        }
                     });
 
                     // Set default selected CCTV if any active
@@ -596,8 +613,7 @@
                         mainCCTVPlayer.src = firstActiveCCTV.stream_url;
                         mainCCTVPlayer.classList.remove('d-none');
                         cctvPlaceholder.classList.add('d-none');
-                        mainCCTVPlayer.load();
-                        mainCCTVPlayer.play().catch(e => console.error("Error playing default video:", e));
+                        // Hapus mainCCTVPlayer.load() dan mainCCTVPlayer.play()
                     }
                 })
                 .catch(error => {

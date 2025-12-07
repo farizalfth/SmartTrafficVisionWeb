@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session, jsonify
 from werkzeug.utils import secure_filename
 import mysql.connector
@@ -406,18 +405,26 @@ def api_analytics_accident_count(period):
 # API untuk data lokasi CCTV (publik, TIDAK PERLU LOGIN ADMIN)
 @app.route('/api/cctv_locations', methods=['GET'])
 def get_cctv_locations():
-    # Ini adalah data mock untuk lokasi CCTV di Jawa Tengah
     cctv_locations = [
-        { "id": 1, "name": "CCTV Semarang (Simpang Lima)", "lat": -6.9832, "lon": 110.4093, "status": "Aktif", "last_update": "2024-05-15 10:30:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" }, # Contoh URL stream
-        { "id": 2, "name": "CCTV Solo (Gladag)", "lat": -7.5684, "lon": 110.8291, "status": "Aktif", "last_update": "2024-05-15 10:32:15", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
-        { "id": 3, "name": "CCTV Yogyakarta (Malioboro)", "lat": -7.7925, "lon": 110.3659, "status": "Aktif", "last_update": "2024-05-15 10:35:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_3mb.mp4" },
-        { "id": 4, "name": "CCTV Magelang (Alun-alun)", "lat": -7.4727, "lon": 110.2188, "status": "Tidak Aktif", "last_update": "2024-05-15 09:00:00", "stream_url": None },
-        { "id": 5, "name": "CCTV Tegal (Perempatan Maya)", "lat": -6.8778, "lon": 109.1418, "status": "Aktif", "last_update": "2024-05-15 10:28:40", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" },
-        { "id": 6, "name": "CCTV Purwokerto (Bundaran)", "lat": -7.4243, "lon": 109.2201, "status": "Aktif", "last_update": "2024-05-15 10:31:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
-        { "id": 7, "name": "CCTV Kudus (Simpang Tujuh)", "lat": -6.8048, "lon": 110.8351, "status": "Aktif", "last_update": "2024-05-15 10:34:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_3mb.mp4" },
-        { "id": 8, "name": "CCTV Pekalongan (Pantai Pasir Kencana)", "lat": -6.8624, "lon": 109.6587, "status": "Aktif", "last_update": "2024-05-15 10:29:10", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" },
-        { "id": 9, "name": "CCTV Salatiga (Bundaran Tamansari)", "lat": -7.3323, "lon": 110.4965, "status": "Aktif", "last_update": "2024-05-15 10:36:20", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
-        { "id": 10, "name": "CCTV Cilacap (Bundaran)", "lat": -7.6908, "lon": 109.0270, "status": "Tidak Aktif", "last_update": "2024-05-15 08:45:00", "stream_url": None }
+        # CCTV DISHUB Kota Pontianak
+        # Gunakan format embed: https://www.youtube.com/embed/VIDEO_ID
+        # Koordinat Pontianak (pusat kota/simpang utama): -0.0245, 109.3406
+        { "id": 1, "name": "CCTV Pontianak (Simpang Garuda)", "lat": -0.0245, "lon": 109.3406, "status": "Aktif", "last_update": "2024-05-15 10:30:00", "stream_url": "https://www.youtube.com/embed/1s9cRcqZf58" },
+        { "id": 2, "name": "CCTV Pontianak (Tugu Khatulistiwa)", "lat": 0.0000, "lon": 109.3300, "status": "Aktif", "last_update": "2024-05-15 10:30:00", "stream_url": "https://www.youtube.com/embed/oqSqC-gOALo" }, # Contoh ID lain
+        
+        # CCTV DISHUB Demak
+        # Gunakan format embed: https://www.youtube.com/embed/VIDEO_ID
+        # Koordinat Demak (pusat kota/simpang utama): -6.8906, 110.6385
+        { "id": 3, "name": "CCTV Demak (Alun-Alun)", "lat": -6.8906, "lon": 110.6385, "status": "Aktif", "last_update": "2024-05-15 10:32:15", "stream_url": "https://www.youtube.com/embed/mHk5UKckU7M" },
+        { "id": 4, "name": "CCTV Demak (Pasar Bintoro)", "lat": -6.8850, "lon": 110.6400, "status": "Aktif", "last_update": "2024-05-15 10:32:15", "stream_url": "https://www.youtube.com/embed/7c4CsGkmBu8" },
+        { "id": 5, "name": "CCTV Demak (Pertigaan Trengguli)", "lat": -6.8700, "lon": 110.6500, "status": "Aktif", "last_update": "2024-05-15 10:32:15", "stream_url": "https://www.youtube.com/embed/5nw3G2jtWaU" },
+        
+        # Tambahkan contoh CCTV Magelang jika Anda ingin menggunakan kanal Dishub Magelang
+        # { "id": 6, "name": "CCTV Magelang (Simpang Artos)", "lat": -7.5000, "lon": 110.2000, "status": "Aktif", "last_update": "2024-05-15 10:35:00", "stream_url": "https://www.youtube.com/embed/ID_VIDEO_LIVE_MAGELANG" },
+        
+        # Contoh CCTV statis atau non-YouTube
+        # { "id": 7, "name": "CCTV Semarang (Simpang Lima)", "lat": -6.9832, "lon": 110.4093, "status": "Aktif", "last_update": "2024-05-15 10:30:00", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" },
+        # { "id": 8, "name": "CCTV Solo (Gladag)", "lat": -7.5684, "lon": 110.8291, "status": "Aktif", "last_update": "2024-05-15 10:32:15", "stream_url": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4" },
     ]
     return jsonify(cctv_locations), 200
 
