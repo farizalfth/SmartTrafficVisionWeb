@@ -20,7 +20,7 @@
         padding-top: 70px;
       }
 
-      /* Navbar disesuaikan agar lebih mirip Flutter */
+      /* Navbar */
       .navbar {
         background-color: #1a1a1a !important;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
@@ -53,31 +53,49 @@
         background-color: #1a1a1a;
         border: none;
         border-radius: 15px;
-        padding: 25px;
+        padding: 30px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         height: 100%;
+        border: 1px solid #333;
       }
       .chart-card h4 {
         font-weight: 600;
-        color: #ffffff;
+        color: #0dcaf0; /* Aksen Biru */
         margin-bottom: 25px;
+        text-align: center;
       }
 
       /* Filter Buttons */
       .btn-filter-group .btn {
-        background-color: #333333;
-        color: #e0e0e0;
-        border: none;
-        border-radius: 10px;
+        background-color: #2c2c2c;
+        color: #aaa;
+        border: 1px solid #444;
+        border-radius: 50px; /* Pill shape */
         margin: 0 5px;
-        padding: 8px 20px;
+        padding: 8px 25px;
         font-weight: 500;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition: all 0.3s ease;
       }
       .btn-filter-group .btn.active,
       .btn-filter-group .btn:hover {
         background-color: #0dcaf0;
-        color: #1a1a1a;
+        color: #000;
+        border-color: #0dcaf0;
+        font-weight: 600;
+      }
+
+      /* Form Controls */
+      .form-select {
+          background-color: #2c2c2c;
+          border: 1px solid #444;
+          color: white;
+          border-radius: 10px;
+      }
+      .form-select:focus {
+          background-color: #2c2c2c;
+          color: white;
+          border-color: #0dcaf0;
+          box-shadow: none;
       }
 
       /* Footer */
@@ -87,6 +105,7 @@
         font-size: 0.85rem;
         padding: 20px 0;
         border-top: 1px solid #333;
+        margin-top: 50px;
       }
     </style>
   </head>
@@ -114,34 +133,38 @@
 
     <!-- ===== MAIN CONTENT ===== -->
     <main class="container py-5">
-      <h2 class="fw-bold mb-4 text-center text-white">Analitik Lalu Lintas & Kecelakaan</h2>
-      <p class="text-secondary text-center mb-5">
-        Pantau tren kepadatan lalu lintas dan jumlah insiden kecelakaan di berbagai periode waktu.
+      <h2 class="fw-bold mb-3 text-center text-white">Analitik Lalu Lintas</h2>
+      <p class="text-secondary text-center mb-4">
+        Pilih lokasi CCTV untuk melihat tren kepadatan lalu lintas.
       </p>
 
-      <!-- FILTER BUTTONS -->
-      <div class="text-center mb-5">
+      <!-- CCTV SELECTOR -->
+      <div class="row justify-content-center mb-4">
+          <div class="col-md-6">
+              <select class="form-select text-center py-2" id="cctvSelect">
+                  <option value="">-- Pilih CCTV --</option>
+                  <!-- Opsi akan diisi Javascript -->
+              </select>
+          </div>
+      </div>
+
+      <!-- FILTER BUTTONS (Harian, Mingguan, Bulanan) -->
+      <div class="text-center mb-4">
         <div class="btn-group btn-filter-group" role="group">
           <button class="btn active" onclick="changePeriod('harian', this)">Harian</button>
           <button class="btn" onclick="changePeriod('mingguan', this)">Mingguan</button>
           <button class="btn" onclick="changePeriod('bulanan', this)">Bulanan</button>
-          <button class="btn" onclick="changePeriod('tahunan', this)">Tahunan</button>
         </div>
       </div>
 
-      <!-- CHARTS -->
-      <div class="row g-4 align-items-stretch">
-        <div class="col-lg-6">
+      <!-- CHART SECTION (Centered Single Chart) -->
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
           <div class="chart-card">
             <h4>Kepadatan Lalu Lintas (%)</h4>
-            <canvas id="trafficChart" style="max-height: 350px;"></canvas>
-          </div>
-        </div>
-
-        <div class="col-lg-6">
-          <div class="chart-card">
-            <h4>Jumlah Kecelakaan</h4>
-            <canvas id="accidentChart" style="max-height: 350px;"></canvas>
+            <div style="position: relative; height: 400px; width: 100%;">
+                <canvas id="trafficChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -157,94 +180,145 @@
     <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // === SAMPLE DATA (sesuai API Flask) ===
-      const dataSet = {
-        harian: {
-          labels: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00'],
-          traffic: [30, 60, 75, 50, 68, 80, 55],
-          accidents: [0, 2, 1, 1, 2, 3, 1]
-        },
-        mingguan: {
-          labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-          traffic: [55, 65, 70, 60, 75, 80, 50],
-          accidents: [2, 1, 3, 2, 4, 5, 1]
-        },
-        bulanan: {
-          labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
-          traffic: [65, 70, 60, 75],
-          accidents: [8, 6, 9, 7]
-        },
-        tahunan: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-          traffic: [60, 62, 65, 68, 72, 70, 75, 73, 68, 70, 74, 78],
-          accidents: [20, 18, 25, 22, 27, 24, 26, 29, 28, 30, 31, 33]
-        }
-      };
+      // Global Vars
+      let trafficChartInstance = null;
+      let currentCctvId = null;
+      let currentPeriod = 'harian';
 
-      // === CHART CONFIG ===
-      const ctxTraffic = document.getElementById('trafficChart');
-      const ctxAccident = document.getElementById('accidentChart');
+      document.addEventListener('DOMContentLoaded', function() {
+          // 1. Fetch CCTV List
+          fetch('/api/cctv_locations')
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById('cctvSelect');
+                data.forEach(cctv => {
+                    const opt = document.createElement('option');
+                    opt.value = cctv.id;
+                    opt.innerText = cctv.name;
+                    select.appendChild(opt);
+                });
+            })
+            .catch(err => console.error("Error loading CCTV:", err));
 
-      let trafficChart = new Chart(ctxTraffic, {
-        type: 'line',
-        data: {
-          labels: dataSet.harian.labels,
-          datasets: [{
-            label: 'Kepadatan',
-            data: dataSet.harian.traffic,
-            borderColor: '#0dcaf0',
-            backgroundColor: 'rgba(13, 202, 240, 0.2)',
-            tension: 0.4,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
+          // 2. Init Chart Kosong
+          initEmptyChart();
+
+          // 3. Event Listener Dropdown
+          document.getElementById('cctvSelect').addEventListener('change', function() {
+              currentCctvId = this.value;
+              updateChart();
+          });
       });
 
-      let accidentChart = new Chart(ctxAccident, {
-        type: 'bar',
-        data: {
-          labels: dataSet.harian.labels,
-          datasets: [{
-            label: 'Kecelakaan',
-            data: dataSet.harian.accidents,
-            backgroundColor: '#dc3545',
-            borderColor: '#dc3545',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
+      // Fungsi Ganti Periode (Tombol)
+      function changePeriod(period, btnElement) {
+          // Update Tombol Active UI
+          document.querySelectorAll('.btn-filter-group .btn').forEach(btn => btn.classList.remove('active'));
+          btnElement.classList.add('active');
+          
+          currentPeriod = period;
+          updateChart();
+      }
 
-      // === CHANGE PERIOD FUNCTION ===
-      function changePeriod(period, button) {
-        document.querySelectorAll('.btn-filter-group .btn').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
+      // Fungsi Utama Update Chart
+      function updateChart() {
+          // Jika belum pilih CCTV, jangan load data (atau load kosong)
+          let url = `/api/public/analytics_data?period=${currentPeriod}`;
+          
+          if(currentCctvId) {
+              url += `&cctv_id=${currentCctvId}`;
+          } else {
+              // Jika tidak ada ID, render kosong dan return
+              renderTrafficChart([], []); 
+              return;
+          }
 
-        const data = dataSet[period];
-        trafficChart.data.labels = data.labels;
-        trafficChart.data.datasets[0].data = data.traffic;
-        trafficChart.update();
+          // Fetch Data dari API Python
+          fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                  renderTrafficChart(data.labels, data.traffic);
+              })
+              .catch(err => console.error("Gagal mengambil data:", err));
+      }
 
-        accidentChart.data.labels = data.labels;
-        accidentChart.data.datasets[0].data = data.accidents;
-        accidentChart.update();
+      function initEmptyChart() {
+          // Render chart kosong awal
+          const ctx = document.getElementById('trafficChart').getContext('2d');
+          trafficChartInstance = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: [],
+                  datasets: []
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: { beginAtZero: true, max: 100, grid: { color: '#333' } },
+                      x: { grid: { display: false } }
+                  }
+              }
+          });
+      }
+
+      // Render Grafik Kepadatan (Bar Chart Modern)
+      function renderTrafficChart(labels, data) {
+          const ctx = document.getElementById('trafficChart').getContext('2d');
+          
+          if (trafficChartInstance) {
+              trafficChartInstance.destroy(); // Hapus chart lama
+          }
+
+          // Buat Gradient Warna Biru
+          let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+          gradient.addColorStop(0, 'rgba(13, 202, 240, 0.8)'); // Biru terang atas
+          gradient.addColorStop(1, 'rgba(13, 202, 240, 0.1)'); // Transparan bawah
+
+          trafficChartInstance = new Chart(ctx, {
+              type: 'bar', 
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Tingkat Kepadatan',
+                      data: data,
+                      backgroundColor: gradient,
+                      borderColor: '#0dcaf0',
+                      borderWidth: 1,
+                      borderRadius: 5,
+                      barPercentage: 0.5 
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: { 
+                          beginAtZero: true, 
+                          max: 100, 
+                          ticks: { color: '#bbb' }, 
+                          grid: { color: '#333', borderDash: [5, 5] } 
+                      },
+                      x: { 
+                          ticks: { color: '#bbb' }, 
+                          grid: { display: false } 
+                      }
+                  },
+                  plugins: { 
+                      legend: { display: false },
+                      tooltip: {
+                          backgroundColor: 'rgba(0,0,0,0.8)',
+                          titleColor: '#fff',
+                          bodyColor: '#0dcaf0',
+                          callbacks: {
+                              label: function(context) {
+                                  return context.parsed.y + '% Kepadatan';
+                              }
+                          }
+                      }
+                  }
+              }
+          });
       }
     </script>
   </body>

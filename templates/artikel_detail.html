@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ artikel.judul }} | Smart Traffic Vision</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --accent-cyan: #00E5FF;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            padding-top: 80px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: rgba(30, 30, 30, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--accent-cyan) !important;
+            letter-spacing: 1px;
+        }
+        .navbar-nav .nav-link {
+            color: var(--text-main) !important;
+            margin-right: 15px;
+            transition: 0.3s;
+        }
+        .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
+            color: var(--accent-cyan) !important;
+        }
+        .btn-outline-custom {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        .btn-outline-custom:hover {
+            background-color: var(--accent-cyan);
+            color: #000;
+        }
+
+        /* Article Content */
+        .article-container {
+            max-width: 800px; /* Lebar ideal untuk membaca */
+            margin: 0 auto;
+        }
+
+        .article-header {
+            margin-bottom: 30px;
+        }
+
+        .article-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .article-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 20px;
+        }
+
+        .article-image {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .article-body {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #ccc;
+            /* Agar enter/paragraf dari database terbaca */
+            white-space: pre-wrap; 
+            text-align: justify;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            transition: 0.3s;
+        }
+        .back-btn:hover {
+            color: var(--accent-cyan);
+            transform: translateX(-5px);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 25px 0;
+            border-top: 1px solid #333;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('read_artikel') }}">Artikel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('cctv_page') }}">Peta CCTV</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">Tentang Kami</a></li>
+                </ul>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-custom ms-lg-3">Login Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="container mt-5 mb-5">
+        <div class="article-container">
+            <!-- Tombol Kembali -->
+            <a href="{{ url_for('read_artikel') }}" class="back-btn">
+                <i data-lucide="arrow-left"></i> Kembali ke Daftar Artikel
+            </a>
+
+            <!-- Header Artikel -->
+            <div class="article-header">
+                <h1 class="article-title">{{ artikel.judul }}</h1>
+                <div class="article-meta">
+                    <span><i data-lucide="calendar" size="14"></i> {{ artikel.tanggal.strftime('%d %B %Y') if artikel.tanggal else '-' }}</span>
+                    <span><i data-lucide="user" size="14"></i> Admin</span>
+                </div>
+            </div>
+
+            <!-- Gambar Artikel -->
+            {% if artikel.gambar %}
+                <img src="{{ url_for('static', filename='uploads/' + artikel.gambar) }}" alt="{{ artikel.judul }}" class="article-image">
+            {% endif %}
+
+            <!-- Isi Artikel -->
+            <div class="article-body">
+                {{ artikel.isi }}
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center">
+        <div class="container">
+            <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

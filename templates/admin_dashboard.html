@@ -3,654 +3,644 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Admin | Smart Traffic Vision</title>
+    <title>Admin Dashboard | Smart Traffic Vision</title>
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts - Poppins -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        :root {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --accent-cyan: #00E5FF;
+            --accent-yellow: #FFD600;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --border-color: #333;
+        }
+
         body {
-            background-color: #000000 !important;
-            color: #e0e0e0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             font-family: 'Poppins', sans-serif;
-            padding-top: 70px; /* Offset for fixed navbar */
+            padding-top: 80px;
+            padding-bottom: 50px;
         }
 
         /* Navbar */
         .navbar {
-            background-color: #1a1a1a !important;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            background-color: rgba(30, 30, 30, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
         }
         .navbar-brand {
             font-weight: 700;
-            color: #0dcaf0 !important;
+            color: var(--accent-cyan) !important;
+            letter-spacing: 1px;
         }
-        .navbar-nav .nav-link {
-            color: #e0e0e0 !important;
-            font-weight: 500;
-            margin-right: 15px;
-            transition: color 0.2s ease;
+        .btn-outline-custom {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            border-radius: 50px;
+            padding: 5px 20px;
         }
-        .navbar-nav .nav-link:hover,
-        .navbar-nav .nav-link.active {
-            color: #0dcaf0 !important;
-        }
-        .btn-outline-light {
-            color: #0dcaf0;
-            border-color: #0dcaf0;
-            font-weight: 600;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-        .btn-outline-light:hover {
-            background-color: #0dcaf0;
-            color: #1a1a1a;
+        .btn-outline-custom:hover {
+            background-color: var(--accent-cyan);
+            color: #000;
         }
 
-        h2 {
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
-        h4 {
-            font-weight: 600;
-            color: #0dcaf0;
-            margin-bottom: 20px;
-        }
-
-        /* Summary Cards */
+        /* --- SECTION 1: RINGKASAN CARDS --- */
         .summary-card {
-            background-color: #1a1a1a;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            margin-bottom: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 150px;
-        }
-        .summary-card .icon {
-            font-size: 3rem;
-            color: #0dcaf0;
-            margin-bottom: 10px;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .summary-card .value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 5px;
-        }
-        .summary-card .label {
-            font-size: 0.9rem;
-            color: #b0b0b0;
-        }
-
-        /* Chart Cards */
-        .chart-card {
-            background-color: #1a1a1a;
-            border-radius: 15px;
+            background: linear-gradient(145deg, #252525, #1a1a1a);
+            border-radius: 16px;
             padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .chart-card h4 {
-            margin-bottom: 15px;
-        }
-        /* Kontrol tinggi canvas untuk mencegah memanjang tanpa henti */
-        .chart-card canvas {
-            max-height: 350px;
-            width: 100% !important;
-            height: 350px !important; /* Paksa tinggi tertentu */
-            display: block; /* Penting untuk Chart.js agar responsif */
-        }
-
-        /* Video Stream */
-        .video-stream-card {
-            background-color: #1a1a1a;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-            min-height: 400px; /* Tetapkan tinggi minimum */
-            display: flex;
-            flex-direction: column;
-        }
-        .video-stream-card .form-label {
-            color: #b0b0b0;
-            margin-bottom: 8px;
-        }
-        /* Style for both iframe and video (if using video for fallback) */
-        .video-stream-card iframe, .video-stream-card video {
-            width: 100%;
-            flex-grow: 1; /* Biarkan video mengambil sisa ruang */
-            max-height: 300px; /* Batasi tinggi maksimum video */
-            border-radius: 10px;
-            border: none;
-            background-color: #000;
-        }
-        .video-stream-placeholder {
-            color: #888;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
             text-align: center;
-            padding: 50px;
-            font-size: 1.2rem;
+            height: 100%;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            flex-grow: 1; /* Biarkan placeholder mengambil sisa ruang */
-            min-height: 200px; /* Minimum height for placeholder */
+            align-items: center;
+            transition: transform 0.3s;
         }
+        .summary-card:hover { transform: translateY(-5px); border-color: var(--accent-cyan); }
+        .summary-card .icon { margin-bottom: 15px; width: 48px; height: 48px; }
+        .summary-card .value { font-size: 2.2rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .summary-card .label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; }
 
-        /* Artikel Card di Admin Dashboard */
-        .article-card-admin {
-            background-color: #1a1a1a;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
+        /* --- GLOBAL CARD STYLE --- */
+        .dashboard-card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            height: 100%;
         }
-        .article-card-admin .list-group-item {
-            background-color: transparent;
-            border-color: #333333;
-            color: #e0e0e0;
-            padding: 15px 0;
-            display: flex;
-            align-items: flex-start;
-            text-decoration: none; /* Remove underline from link */
+        .card-header-custom {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
         }
-        .article-card-admin .list-group-item:last-child {
-            border-bottom: none;
-        }
-        .article-card-admin .list-group-item:hover {
-            background-color: #2a2a2a; /* Hover effect */
-        }
-        .article-card-admin .list-group-item img {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-        .article-card-admin .list-group-item .article-info h6 {
-            color: #0dcaf0;
-            font-weight: 600;
-            margin-bottom: 5px;
-            line-height: 1.4;
-        }
-        .article-card-admin .list-group-item .article-info small {
-            color: #b0b0b0;
-            font-size: 0.8rem;
-        }
+        .card-header-custom h4 { margin: 0; font-weight: 600; font-size: 1.25rem; color: var(--accent-cyan); }
 
-        /* Flash messages */
-        .flash-messages-container {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 500px;
-            z-index: 1050;
-            pointer-events: none; /* Allows clicks to pass through to elements behind it */
+        /* --- SECTION 2: LIVE PLAYER --- */
+        .video-container {
+            width: 100%;
+            min-height: 400px;
+            background-color: #000;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #444;
+            overflow: hidden;
+            position: relative;
         }
-        .flash-messages-container .alert {
-            pointer-events: auto; /* Re-enable pointer events for the alert itself */
-            border-radius: 10px;
-            color: #fff;
-            padding: 15px 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            text-align: left;
-            opacity: 1;
-            transition: opacity 0.5s ease-out;
-            margin-bottom: 10px; /* Space between multiple alerts */
+        .video-container iframe { width: 100%; height: 400px; border: none; }
+        
+        /* --- ARTIKEL LIST --- */
+        .article-item {
+            display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; text-decoration: none; color: white;
         }
-        .flash-messages-container .alert.fade.show {
-            opacity: 1;
-        }
-        .flash-messages-container .alert.fade:not(.show) {
-            opacity: 0;
-        }
+        .article-item:last-child { border-bottom: none; }
+        .article-item:hover { background-color: rgba(255,255,255,0.05); }
+        .article-item img { width: 70px; height: 50px; border-radius: 6px; object-fit: cover; margin-right: 15px; }
 
-        .alert-success { background-color: #28a745; }
-        .alert-danger { background-color: #dc3545; }
-        .alert-info { background-color: #17a2b8; }
-        .alert-warning { background-color: #ffc107; color: #1a1a1a; }
-
-        .btn-close {
-          filter: invert(1);
+        /* --- SECTION 3: GRAFIK (Chart.js) --- */
+        .period-toggle {
+            background-color: #2c2c2c; border-radius: 8px; padding: 4px; display: inline-flex;
         }
-
-        /* Footer */
-        footer {
-            background-color: #1a1a1a;
-            color: #888;
-            font-size: 0.85rem;
-            padding: 20px 0;
-            border-top: 1px solid #333;
-            margin-top: 50px;
+        .period-toggle input { display: none; }
+        .period-toggle label {
+            padding: 5px 15px; font-size: 0.8rem; color: #aaa; cursor: pointer; border-radius: 6px; transition: all 0.3s;
         }
+        .period-toggle input:checked + label {
+            background-color: var(--accent-cyan); color: #000; font-weight: 600;
+        }
+        /* Custom Legend for Doughnut */
+        .chart-legend-custom {
+            display: flex; flex-direction: column; justify-content: center; gap: 12px; margin-left: 20px;
+        }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; width: 100%; }
+        .legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; display: inline-block; }
+
+        /* --- SECTION 4: MANAJEMEN KAMERA (List) --- */
+        .camera-item {
+            background-color: #252525; border-radius: 10px; padding: 12px; margin-bottom: 12px;
+            display: flex; align-items: center; transition: transform 0.2s; border: 1px solid transparent;
+        }
+        .camera-item:hover { border-color: var(--accent-cyan); transform: translateX(5px); }
+        .camera-thumb {
+            width: 60px; height: 40px; background-color: #000; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; margin-right: 15px;
+        }
+        .play-icon { color: #ef4444; fill: #ef4444; }
+        .camera-info { flex-grow: 1; }
+        .camera-name { font-weight: 600; font-size: 0.95rem; margin: 0; color: white; }
+        .camera-loc { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+        .camera-actions button { background: transparent; border: none; color: var(--text-muted); margin-left: 8px; }
+        .camera-actions button:hover { color: var(--accent-cyan); }
+        .camera-actions button.btn-del:hover { color: #ef4444; }
+
+        /* Tombol Tambah di Header Card */
+        .btn-add-camera {
+            background-color: var(--accent-cyan); color: #000; font-weight: 600;
+            border-radius: 50px; padding: 5px 15px; border: none; display: flex; align-items: center;
+        }
+        .btn-add-camera:hover { background-color: #00B8D4; color: #000; }
+
+        /* Server Status Style */
+        .server-status-card {
+            background: linear-gradient(135deg, #1e1e1e 0%, #252525 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 1px solid var(--border-color);
+            position: relative; overflow: hidden;
+        }
+        .status-indicator {
+            width: 15px; height: 15px; background-color: #00C853; border-radius: 50%;
+            box-shadow: 0 0 15px #00C853; margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 200, 83, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 200, 83, 0); }
+        }
+        .status-bar-container {
+            width: 80%; height: 6px; background-color: #333; border-radius: 10px; margin-top: 15px; overflow: hidden;
+        }
+        .status-bar-fill {
+            height: 100%; width: 92%; background-color: #00C853; border-radius: 10px;
+        }
+        
+        /* Modal */
+        .modal-content { background-color: var(--bg-card); border: 1px solid var(--border-color); color: white; }
+        .form-control, .form-select { background-color: #2c2c2c; border: 1px solid #444; color: white; }
+        .form-control:focus { background-color: #2c2c2c; color: white; border-color: var(--accent-cyan); box-shadow: none; }
     </style>
 </head>
 <body>
 
-    <!-- ===== NAVBAR ===== -->
-    <header class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard') }}">Dashboard Admin</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('kelola_artikel') }}">Kelola Artikel</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('cctv_page') }}">Peta CCTV</a></li>
-                </ul>
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-light rounded-pill ms-lg-3">Logout</a>
+            <a class="navbar-brand" href="#">SMART TRAFFIC VISION</a>
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-custom">Logout</a>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- ===== FLASH MESSAGES ===== -->
-    <div class="flash-messages-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-
-    <!-- ===== MAIN CONTENT ===== -->
-    <div class="container mt-5 pt-4">
-        <h2>Ringkasan Lalu Lintas (Admin)</h2>
-
-        <!-- Summary Cards -->
-        <div class="row">
-            <div class="col-md-3">
+    <div class="container mt-4">
+        
+        <!-- BAGIAN 1: RINGKASAN LALU LINTAS -->
+        <h4 class="mb-3 fw-bold text-white text-center">Ringkasan Lalu Lintas</h4>
+        <div class="row g-4 mb-5 justify-content-center">
+            <div class="col-md-3 col-sm-6">
                 <div class="summary-card">
-                    <i data-lucide="car" class="icon"></i>
+                    <i data-lucide="car" class="icon" style="color: white;"></i>
                     <div class="value" id="kendaraanHariIni">-</div>
-                    <div class="label">Total Kendaraan Hari Ini</div>
+                    <div class="label">Total Kendaraan</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="summary-card">
-                    <i data-lucide="thermometer" class="icon"></i>
+                    <i data-lucide="activity" class="icon" style="color: var(--accent-yellow);"></i>
                     <div class="value" id="kepadatanTertinggi">-</div>
-                    <div class="label">Kepadatan Tertinggi</div>
+                    <div class="label">Kepadatan</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="summary-card">
-                    <i data-lucide="gauge" class="icon"></i>
+                    <i data-lucide="gauge" class="icon" style="color: var(--accent-cyan);"></i>
                     <div class="value" id="rataRataKecepatan">-</div>
                     <div class="label">Rata-rata Kecepatan</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="summary-card">
-                    <i data-lucide="video" class="icon"></i>
+                    <i data-lucide="camera" class="icon" style="color: #FF5252;"></i>
                     <div class="value" id="kameraAktif">-</div>
-                    <div class="label">Kamera CCTV Aktif</div>
+                    <div class="label">Kamera Aktif</div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <!-- Live Feed CCTV Utama -->
-            <div class="col-lg-7">
-                <div class="video-stream-card">
-                    <h4>Live Feed CCTV Utama</h4>
-                    <div class="mb-3 w-100">
-                        <label for="cctvSelect" class="form-label text-start w-100">Pilih CCTV:</label>
-                        <select class="form-select bg-dark text-white border-secondary" id="cctvSelect">
-                            <option value="">Pilih CCTV untuk live feed</option>
-                            <!-- Options will be loaded by JavaScript -->
+        <!-- BAGIAN 2: LIVE FEED & ARTIKEL -->
+        <div class="row g-4 mb-5">
+            <!-- Live Feed Player -->
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h4>Live Feed CCTV Utama</h4>
+                        <!-- Dropdown Feed -->
+                        <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 250px;" id="cctvSelect">
+                            <option value="">-- Pilih CCTV --</option>
                         </select>
                     </div>
-                    <div id="videoPlayerContainer" class="w-100 flex-grow-1 d-flex align-items-center justify-content-center">
-                        <!-- Perubahan di sini: Mengganti <video> dengan <iframe> -->
-                        <iframe id="mainCCTVPlayer" class="d-none" width="100%" height="300" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                        <div id="cctvPlaceholder" class="video-stream-placeholder">
-                            Pilih CCTV untuk melihat streaming.
+                    <div class="video-container">
+                        <iframe id="mainCCTVPlayer" class="d-none" src="" frameborder="0" allowfullscreen></iframe>
+                        <div id="cctvPlaceholder" class="text-center text-muted">
+                            <i data-lucide="video-off" size="48" class="mb-3"></i><br>
+                            Silakan pilih CCTV dari menu di atas untuk melihat tayangan.
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Artikel Terbaru (Admin) -->
-            <div class="col-lg-5">
-                <div class="article-card-admin">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- Artikel Terbaru -->
+            <div class="col-lg-4">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
                         <h4>Artikel Terbaru</h4>
-                        <a href="{{ url_for('kelola_artikel') }}" class="btn btn-info btn-sm rounded-pill">Kelola Artikel</a>
+                        <a href="{{ url_for('kelola_artikel') }}" class="btn btn-sm btn-outline-secondary rounded-pill">Kelola</a>
                     </div>
-                    {% if latest_articles %}
-                        <div class="list-group list-group-flush">
-                            {% for article in latest_articles %}
-                            <a href="{{ url_for('edit_artikel', id=article.id) }}" class="list-group-item list-group-item-action">
-                                {% if article.gambar %}
-                                    <img src="{{ url_for('static', filename='uploads/' + article.gambar) }}" alt="{{ article.judul }}">
-                                {% else %}
-                                    <img src="https://via.placeholder.com/80x60?text=No+Image" alt="No Image">
-                                {% endif %}
-                                <div class="article-info">
-                                    <h6>{{ article.judul }}</h6>
-                                    <small>{{ article.tanggal.strftime('%d %b %Y %H:%M') if article.tanggal else 'N/A' }}</small>
-                                </div>
-                            </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted text-center">Belum ada artikel.</p>
-                    {% endif %}
+                    <div>
+                        {% for article in latest_articles %}
+                        <a href="#" class="article-item">
+                            {% if article.gambar %}
+                                <img src="{{ url_for('static', filename='uploads/' + article.gambar) }}">
+                            {% else %}
+                                <img src="https://via.placeholder.com/70x50">
+                            {% endif %}
+                            <div>
+                                <h6 class="mb-1 fw-bold small text-white">{{ article.judul }}</h6>
+                                <small class="text-muted" style="font-size: 0.7rem;">{{ article.tanggal.strftime('%d %b %Y') }}</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <!-- Tren Kepadatan Lalu Lintas -->
-            <div class="col-lg-6">
-                <div class="chart-card">
-                    <h4>Tren Kepadatan Lalu Lintas</h4>
-                    <canvas id="trafficCongestionChart"></canvas>
+        <!-- BAGIAN 3: STATISTIK & ANALITIK (DENGAN FILTER CCTV KHUSUS) -->
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold text-white mb-0">Statistik & Analitik</h4>
+            <!-- NEW: Dropdown khusus untuk filter Grafik -->
+            <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 250px;" id="chartCctvSelect">
+                <option value="">Semua Data CCTV</option>
+                <!-- Options will be loaded via JS -->
+            </select>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- Bar Chart (Tren Kepadatan) -->
+            <div class="col-lg-7">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h4>Tren Kepadatan</h4>
+                        <!-- Filter Waktu -->
+                        <div class="period-toggle">
+                            <input type="radio" id="t_hari" name="trafficPeriod" value="harian" checked onchange="changeTrafficPeriod(this.value)">
+                            <label for="t_hari">Hari</label>
+                            <input type="radio" id="t_minggu" name="trafficPeriod" value="mingguan" onchange="changeTrafficPeriod(this.value)">
+                            <label for="t_minggu">Minggu</label>
+                            <input type="radio" id="t_bulan" name="trafficPeriod" value="bulanan" onchange="changeTrafficPeriod(this.value)">
+                            <label for="t_bulan">Bulan</label>
+                        </div>
+                    </div>
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
                 </div>
             </div>
 
-            <!-- Distribusi Jenis Kendaraan -->
-            <div class="col-lg-6">
-                <div class="chart-card">
-                    <h4>Distribusi Jenis Kendaraan</h4>
-                    <canvas id="vehicleDistributionChart"></canvas>
+            <!-- Doughnut Chart (Distribusi) -->
+            <div class="col-lg-5">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h4>Distribusi Kendaraan</h4>
+                        <div class="period-toggle">
+                            <input type="radio" id="v_hari" name="vehiclePeriod" value="harian" checked onchange="changeVehiclePeriod(this.value)">
+                            <label for="v_hari">Hari</label>
+                            <input type="radio" id="v_minggu" name="vehiclePeriod" value="mingguan" onchange="changeVehiclePeriod(this.value)">
+                            <label for="v_minggu">Minggu</label>
+                            <input type="radio" id="v_bulan" name="vehiclePeriod" value="bulanan" onchange="changeVehiclePeriod(this.value)">
+                            <label for="v_bulan">Bulan</label>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center h-100 pb-3">
+                        <div style="height: 220px; width: 220px;">
+                            <canvas id="vehicleChart"></canvas>
+                        </div>
+                        <!-- Custom Legend -->
+                        <div class="chart-legend-custom">
+                            <div class="legend-item">
+                                <div><span class="legend-color" style="background: #00E5FF;"></span>Mobil</div>
+                                <span class="fw-bold">45%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div><span class="legend-color" style="background: #FFD600;"></span>Motor</div>
+                                <span class="fw-bold">45%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div><span class="legend-color" style="background: #00C853;"></span>Bus</div>
+                                <span class="fw-bold">5%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div><span class="legend-color" style="background: #FF5252;"></span>Truk</div>
+                                <span class="fw-bold">5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAGIAN 4: MANAJEMEN KAMERA -->
+        <h4 class="mb-3 fw-bold text-white">Manajemen Kamera</h4>
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <!-- Header dengan Search dan Tombol Tambah (+) didalamnya -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2 w-100 me-3">
+                            <input type="text" id="cameraSearchInput" class="form-control rounded-pill bg-dark border-secondary text-white" placeholder="Cari kamera berdasarkan nama..." style="max-width: 300px;">
+                        </div>
+                        <button class="btn-add-camera" data-bs-toggle="modal" data-bs-target="#addCameraModal">
+                            <i data-lucide="plus" size="18" class="me-1"></i> Tambah
+                        </button>
+                    </div>
+
+                    <div id="cameraListContainer">
+                        {% for cctv in cctv_list %}
+                        <div class="camera-item">
+                            <div class="camera-thumb">
+                                <i data-lucide="play-circle" class="play-icon"></i>
+                            </div>
+                            <div class="camera-info">
+                                <p class="camera-name">{{ cctv.name }}</p>
+                                <p class="camera-loc"><i data-lucide="map-pin" size="12"></i> ID: {{ cctv.id }} • {{ cctv.status }}</p>
+                            </div>
+                            <div class="camera-actions">
+                                <button onclick="openEditModal('{{ cctv.name }}', '{{ cctv.stream_url }}')"><i data-lucide="pencil" size="18"></i></button>
+                                <button class="btn-del" onclick="confirmDelete('{{ cctv.name }}')"><i data-lucide="trash-2" size="18"></i></button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Server Status -->
+            <div class="col-lg-4">
+                <div class="dashboard-card server-status-card">
+                    <div class="status-indicator"></div>
+                    <h5 class="text-white fw-bold mb-1">Server Status</h5>
+                    <p class="text-success fw-bold mb-3" style="letter-spacing: 1px;">ONLINE • STABIL</p>
+                    
+                    <div class="d-flex justify-content-between w-75 text-muted small">
+                        <span>Uptime</span>
+                        <span>99.9%</span>
+                    </div>
+                    <div class="status-bar-container">
+                        <div class="status-bar-fill"></div>
+                    </div>
+                    
+                    <p class="text-muted small mt-3">Terakhir diperbarui: Baru saja</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Tambah/Edit Kamera -->
+    <div class="modal fade" id="addCameraModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Form Data Kamera</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Nama Kamera</label>
+                            <input type="text" class="form-control" placeholder="Contoh: CCTV Simpang Lima">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">URL Stream</label>
+                            <input type="text" class="form-control" placeholder="https://...">
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 fw-bold">Simpan Data</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== FOOTER ===== -->
-    <footer class="text-center py-4 mt-5">
-        <div class="container">
-            <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
-        </div>
-    </footer>
+    <!-- JSON Data Helper -->
+    <script id="cctv-data" type="application/json">
+        {{ cctv_list | tojson }}
+    </script>
 
-    <!-- Bootstrap JS Bundle with Popper -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         lucide.createIcons();
 
-        // Auto-close flash messages
+        // --- GLOBAL VARS ---
+        let currentFeedId = null; // ID untuk Live Feed
+        let currentChartId = null; // ID untuk Grafik
+        let trafficPeriod = 'harian';
+        let vehiclePeriod = 'harian';
+        let trafficChartInstance = null;
+        let vehicleChartInstance = null;
+
         document.addEventListener('DOMContentLoaded', function() {
-            var alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    if (alert && alert.parentNode) {
-                        var bsAlert = bootstrap.Alert.getInstance(alert);
-                        if (!bsAlert) {
-                            bsAlert = new bootstrap.Alert(alert);
-                        }
-                        bsAlert.close();
-                    }
-                }, 2000); // 2000 milidetik = 2 detik
+            // 1. Data Parsing
+            const rawData = document.getElementById('cctv-data').textContent;
+            const cctvData = JSON.parse(rawData);
+
+            // 2. Setup Dropdowns
+            const feedSelect = document.getElementById('cctvSelect');
+            const chartSelect = document.getElementById('chartCctvSelect');
+
+            if(cctvData.length > 0) {
+                cctvData.forEach(cctv => {
+                    // Populate Feed Dropdown
+                    const optFeed = document.createElement('option');
+                    optFeed.value = cctv.id;
+                    optFeed.innerText = cctv.name;
+                    optFeed.dataset.stream = cctv.stream_url;
+                    feedSelect.appendChild(optFeed);
+
+                    // Populate Chart Dropdown
+                    const optChart = document.createElement('option');
+                    optChart.value = cctv.id;
+                    optChart.innerText = cctv.name;
+                    chartSelect.appendChild(optChart);
+                });
+
+                // Default Init
+                fetchSummary(null); // Load global summary
+                updateCharts(null); // Load global charts
+            }
+
+            // 3. Event Listener: Feed CCTV
+            feedSelect.addEventListener('change', function() {
+                currentFeedId = this.value;
+                if(!currentFeedId) {
+                    updatePlayer(""); // Reset player if default
+                    return;
+                }
+                const streamUrl = this.options[this.selectedIndex].dataset.stream;
+                updatePlayer(streamUrl);
+                
+                // Opsional: Update summary berdasarkan feed yang dipilih
+                fetchSummary(currentFeedId);
             });
 
-            // --- Fetch Dashboard Summary Data ---
-            fetch('/api/admin/dashboard_summary')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
+            // 4. Event Listener: Chart CCTV (Khusus Grafik)
+            chartSelect.addEventListener('change', function() {
+                currentChartId = this.value; // Bisa kosong (global) atau ID
+                updateCharts(currentChartId);
+            });
+
+            // 5. Event Listener: Search Kamera
+            const searchInput = document.getElementById('cameraSearchInput');
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const items = document.querySelectorAll('.camera-item');
+                
+                items.forEach(item => {
+                    const name = item.querySelector('.camera-name').innerText.toLowerCase();
+                    if(name.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('kendaraanHariIni').innerText = data.kendaraan_hari_ini || 'N/A';
-                    document.getElementById('kepadatanTertinggi').innerText = data.kepadatan_tertinggi || 'N/A';
-                    document.getElementById('rataRataKecepatan').innerText = data.rata_rata_kecepatan || 'N/A';
-                    document.getElementById('kameraAktif').innerText = data.kamera_aktif || 'N/A';
-                })
-                .catch(error => console.error('Error fetching dashboard summary:', error));
-
-            // --- Fetch Traffic Congestion Data and Render Chart ---
-            fetch('/api/admin/traffic_data')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const canvas = document.getElementById('trafficCongestionChart');
-                    const ctx = canvas.getContext('2d');
-
-                    if (!data.labels || !data.kepadatan || data.labels.length === 0 || data.labels.length !== data.kepadatan.length) {
-                        console.warn('Invalid or incomplete traffic congestion data:', data);
-                        ctx.font = '16px Poppins';
-                        ctx.fillStyle = '#e0e0e0';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('Data tidak tersedia atau tidak valid.', canvas.width / 2, canvas.height / 2);
-                        return;
-                    }
-
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Kepadatan Lalu Lintas (%)',
-                                data: data.kepadatan,
-                                borderColor: '#0dcaf0',
-                                backgroundColor: 'rgba(13, 202, 240, 0.2)',
-                                tension: 0.4,
-                                fill: true,
-                                pointBackgroundColor: '#0dcaf0',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#0dcaf0'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: '#e0e0e0'
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    type: 'category',
-                                    grid: {
-                                        color: '#333'
-                                    },
-                                    ticks: {
-                                        color: '#e0e0e0',
-                                        autoSkip: false,
-                                        maxRotation: 45,
-                                        minRotation: 45
-                                    }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    grid: {
-                                        color: '#333'
-                                    },
-                                    ticks: {
-                                        color: '#e0e0e0',
-                                        callback: function(value) {
-                                            return value + '%';
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                })
-                .catch(error => console.error('Error fetching traffic congestion data:', error));
-
-            // --- Fetch Vehicle Distribution Data and Render Chart ---
-            fetch('/api/admin/vehicle_distribution')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const canvas = document.getElementById('vehicleDistributionChart');
-                    const ctx = canvas.getContext('2d');
-
-                    if (!data.labels || !data.data || data.labels.length === 0 || data.labels.length !== data.data.length) {
-                        console.warn('Invalid or incomplete vehicle distribution data:', data);
-                        ctx.font = '16px Poppins';
-                        ctx.fillStyle = '#e0e0e0';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('Data tidak tersedia atau tidak valid.', canvas.width / 2, canvas.height / 2);
-                        return;
-                    }
-
-                    const backgroundColors = [
-                        '#0dcaf0', // Biru
-                        '#ffc107', // Kuning
-                        '#28a745', // Hijau
-                        '#dc3545'  // Merah
-                    ];
-                    const colors = data.labels.map((label, index) => backgroundColors[index % backgroundColors.length]);
-
-                    new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                data: data.data,
-                                backgroundColor: colors,
-                                hoverOffset: 4,
-                                borderColor: '#1a1a1a',
-                                borderWidth: 2
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: '#e0e0e0'
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            let label = context.label || '';
-                                            if (label) {
-                                                label += ': ';
-                                            }
-                                            if (context.parsed !== null) {
-                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                                const value = context.parsed;
-                                                // Check if total is zero to avoid division by zero
-                                                const percentage = total === 0 ? '0.00%' : ((value / total) * 100).toFixed(2) + '%';
-                                                label += percentage;
-                                            }
-                                            return label;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                })
-                .catch(error => console.error('Error fetching vehicle distribution data:', error));
-
-            // --- CCTV Live Feed Logic ---
-            const cctvSelect = document.getElementById('cctvSelect');
-            // Pastikan ini mereferensikan iframe
-            const mainCCTVPlayer = document.getElementById('mainCCTVPlayer');
-            const cctvPlaceholder = document.getElementById('cctvPlaceholder');
-
-            fetch('/api/cctv_locations')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(cctvLocations => {
-                    if (cctvLocations.length === 0) {
-                        const option = document.createElement('option');
-                        option.value = '';
-                        option.innerText = 'Tidak ada CCTV tersedia';
-                        option.disabled = true;
-                        cctvSelect.appendChild(option);
-                        cctvSelect.disabled = true;
-                        return;
-                    }
-
-                    cctvLocations.forEach(cctv => {
-                        const option = document.createElement('option');
-                        option.value = cctv.stream_url || '';
-                        option.innerText = cctv.name + (cctv.status === 'Tidak Aktif' ? ' (Tidak Aktif)' : '');
-                        // Nonaktifkan opsi jika tidak aktif atau tidak ada URL stream
-                        option.disabled = (cctv.status === 'Tidak Aktif' || !cctv.stream_url);
-                        cctvSelect.appendChild(option);
-                    });
-
-                    cctvSelect.addEventListener('change', function() {
-                        const selectedStreamUrl = this.value;
-                        if (selectedStreamUrl) {
-                            mainCCTVPlayer.src = selectedStreamUrl;
-                            mainCCTVPlayer.classList.remove('d-none');
-                            cctvPlaceholder.classList.add('d-none');
-                            // Hapus mainCCTVPlayer.load() dan mainCCTVPlayer.play()
-                        } else {
-                            mainCCTVPlayer.src = ''; // Bersihkan src iframe
-                            mainCCTVPlayer.classList.add('d-none');
-                            cctvPlaceholder.classList.remove('d-none');
-                        }
-                    });
-
-                    // Set default selected CCTV if any active
-                    const firstActiveCCTV = cctvLocations.find(cctv => cctv.status === 'Aktif' && cctv.stream_url);
-                    if (firstActiveCCTV) {
-                        cctvSelect.value = firstActiveCCTV.stream_url;
-                        mainCCTVPlayer.src = firstActiveCCTV.stream_url;
-                        mainCCTVPlayer.classList.remove('d-none');
-                        cctvPlaceholder.classList.add('d-none');
-                        // Hapus mainCCTVPlayer.load() dan mainCCTVPlayer.play()
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching CCTV locations:', error);
-                    cctvPlaceholder.innerText = 'Gagal memuat daftar CCTV.';
-                    cctvSelect.disabled = true;
                 });
+            });
         });
+
+        // --- CORE FUNCTIONS ---
+
+        function updatePlayer(url) {
+            const iframe = document.getElementById('mainCCTVPlayer');
+            const placeholder = document.getElementById('cctvPlaceholder');
+            if(url) {
+                iframe.src = url;
+                iframe.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+            } else {
+                iframe.src = "";
+                iframe.classList.add('d-none');
+                placeholder.classList.remove('d-none');
+            }
+        }
+
+        function fetchSummary(id) {
+            let url = `/api/admin/dashboard_summary`;
+            if(id) url += `?cctv_id=${id}`;
+            fetch(url).then(res => res.json()).then(data => {
+                document.getElementById('kendaraanHariIni').innerText = data.kendaraan_hari_ini;
+                document.getElementById('kepadatanTertinggi').innerText = data.kepadatan_tertinggi;
+                document.getElementById('rataRataKecepatan').innerText = data.rata_rata_kecepatan;
+                document.getElementById('kameraAktif').innerText = data.kamera_aktif; 
+            });
+        }
+
+        function updateCharts(id) {
+            fetchTrafficChart(id, trafficPeriod);
+            fetchVehicleChart(id, vehiclePeriod);
+        }
+
+        function changeTrafficPeriod(period) {
+            trafficPeriod = period;
+            fetchTrafficChart(currentChartId, period);
+        }
+
+        function changeVehiclePeriod(period) {
+            vehiclePeriod = period;
+            fetchVehicleChart(currentChartId, period);
+        }
+
+        // --- CHART GENERATORS ---
+
+        function fetchTrafficChart(id, period) {
+            let url = `/api/admin/traffic_data?period=${period}`;
+            if(id) url += `&cctv_id=${id}`;
+
+            fetch(url).then(res => res.json()).then(data => {
+                const ctx = document.getElementById('trafficChart').getContext('2d');
+                if(trafficChartInstance) trafficChartInstance.destroy();
+
+                trafficChartInstance = new Chart(ctx, {
+                    type: 'bar', 
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Kepadatan',
+                            data: data.kepadatan,
+                            backgroundColor: '#00E5FF',
+                            borderRadius: 4,
+                            barThickness: 20
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true, max: 100,
+                                grid: { color: '#333', borderDash: [5, 5] },
+                                ticks: { color: '#888' }
+                            },
+                            x: { grid: { display: false }, ticks: { color: '#888' } }
+                        }
+                    }
+                });
+            });
+        }
+
+        function fetchVehicleChart(id, period) {
+            let url = `/api/admin/vehicle_distribution?period=${period}`;
+            if(id) url += `&cctv_id=${id}`;
+
+            fetch(url).then(res => res.json()).then(data => {
+                const ctx = document.getElementById('vehicleChart').getContext('2d');
+                if(vehicleChartInstance) vehicleChartInstance.destroy();
+
+                vehicleChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: ['#00E5FF', '#FFD600', '#00C853', '#FF5252'],
+                            borderWidth: 0,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            });
+        }
+
+        // --- CRUD UI Functions ---
+        function openEditModal(name, url) {
+            const modal = new bootstrap.Modal(document.getElementById('addCameraModal'));
+            document.querySelector('#addCameraModal .modal-title').innerText = "Edit Kamera";
+            document.querySelector('#addCameraModal input[placeholder="Contoh: CCTV Simpang Lima"]').value = name;
+            document.querySelector('#addCameraModal input[placeholder="https://..."]').value = url;
+            modal.show();
+        }
+
+        function confirmDelete(name) {
+            if(confirm(`Hapus kamera "${name}"?`)) alert('Data dihapus (Simulasi)');
+        }
     </script>
 </body>
 </html>

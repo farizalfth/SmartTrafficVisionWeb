@@ -1,189 +1,345 @@
 <!doctype html>
 <html lang="id">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tentang Kami | Smart Traffic Vision</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts - Poppins -->
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-      body {
-        background-color: #000000;
-        color: #e0e0e0;
-        font-family: 'Poppins', sans-serif;
-        padding-top: 70px; /* Offset for fixed navbar */
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+        :root {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --accent-cyan: #00E5FF;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+        }
 
-      /* Navbar disesuaikan agar lebih mirip Flutter */
-      .navbar {
-        background-color: #1a1a1a !important;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-      }
-      .navbar-brand {
-        font-weight: 700;
-        color: #0dcaf0 !important;
-      }
-      .navbar-nav .nav-link {
-        color: #e0e0e0 !important;
-        font-weight: 500;
-        margin-right: 15px;
-      }
-      .navbar-nav .nav-link:hover,
-      .navbar-nav .nav-link.active {
-        color: #0dcaf0 !important;
-      }
-      .btn-outline-light {
-        color: #0dcaf0;
-        border-color: #0dcaf0;
-        font-weight: 600;
-      }
-      .btn-outline-light:hover {
-        background-color: #0dcaf0;
-        color: #1a1a1a;
-      }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            padding-top: 80px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-      /* Main Content Section */
-      .about-section {
-        flex-grow: 1; /* Make this section take up available space */
-        padding: 60px 0;
-      }
-      .about-section h1 {
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 30px;
-        text-align: center;
-      }
-      .about-card {
-        background-color: #1a1a1a;
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-        max-width: 800px;
-        margin: 0 auto;
-      }
-      .about-card h4 {
-        color: #0dcaf0;
-        font-weight: 600;
-        margin-top: 30px;
-        margin-bottom: 15px;
-      }
-      .about-card h4:first-child {
-        margin-top: 0;
-      }
-      .about-card p {
-        font-size: 1.05rem;
-        line-height: 1.7;
-        margin-bottom: 15px;
-        color: #b0b0b0;
-      }
-      .about-card ul {
-        list-style-type: none;
-        padding-left: 0;
-      }
-      .about-card ul li {
-        margin-bottom: 10px;
-        color: #b0b0b0;
-      }
-      .about-card ul li strong {
-        color: #e0e0e0;
-      }
+        /* Navbar */
+        .navbar {
+            background-color: rgba(30, 30, 30, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--accent-cyan) !important;
+            letter-spacing: 1px;
+        }
+        .navbar-nav .nav-link {
+            color: var(--text-main) !important;
+            margin-right: 15px;
+            transition: 0.3s;
+        }
+        .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
+            color: var(--accent-cyan) !important;
+        }
+        .btn-outline-custom {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        .btn-outline-custom:hover {
+            background-color: var(--accent-cyan);
+            color: #000;
+        }
 
+        /* Hero Section */
+        .hero-title {
+            font-weight: 800;
+            background: linear-gradient(45deg, #fff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: #ccc; /* Warna teks deskripsi dibuat lebih terang */
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
 
-      /* Footer */
-      footer {
-        background-color: #1a1a1a;
-        color: #888;
-        font-size: 0.85rem;
-        padding: 20px 0;
-        border-top: 1px solid #333;
-        margin-top: auto; /* Push footer to the bottom */
-      }
+        /* Content Cards (Visi Misi) */
+        .custom-card {
+            background-color: var(--bg-card);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 30px;
+            height: 100%;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .custom-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+        }
+        .section-title {
+            color: var(--accent-cyan);
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Tech Stack Items */
+        .tech-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .tech-card:hover {
+            border-color: var(--accent-cyan);
+            background-color: #252525;
+            transform: translateY(-3px);
+        }
+        .tech-icon-box {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 229, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .tech-icon {
+            color: var(--accent-cyan);
+            width: 24px;
+            height: 24px;
+        }
+        .tech-text strong {
+            display: block;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        .tech-text span {
+            display: block;
+            color: #b0b0b0; /* Pastikan terlihat */
+            font-size: 0.85rem;
+        }
+
+        /* Team Cards */
+        .team-card {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: var(--bg-card);
+            border: 1px solid #333;
+            border-radius: 16px;
+            height: 100%;
+            transition: 0.3s;
+        }
+        .team-card:hover {
+            border-color: var(--accent-cyan);
+        }
+        .avatar-placeholder {
+            width: 70px;
+            height: 70px;
+            background-color: #2c2c2c;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 2px solid rgba(0, 229, 255, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 25px 0;
+            border-top: 1px solid #333;
+            margin-top: auto;
+        }
     </style>
-  </head>
+</head>
+<body>
 
-  <body>
-    <!-- ===== NAVBAR ===== -->
-    <header class="navbar navbar-expand-lg navbar-dark fixed-top">
-      <div class="container">
-        <a class="navbar-brand" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('static_page') }}">Statistik & Analitik</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('read_artikel') }}">Artikel</a></li>
-            <li class="nav-item"><a class="nav-link active" href="{{ url_for('about') }}">Tentang Kami</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('cctv_page') }}">Peta CCTV</a></li>
-          </ul>
-          <a href="{{ url_for('login') }}" class="btn btn-outline-light rounded-pill ms-lg-3">Login Admin</a>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">SMART TRAFFIC VISION</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('read_artikel') }}">Artikel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('cctv_page') }}">Peta CCTV</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('about') }}">Tentang Kami</a></li>
+                </ul>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-custom ms-lg-3">Login Admin</a>
+            </div>
         </div>
-      </div>
-    </header>
+    </nav>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <main class="about-section">
-      <div class="container">
-        <h1>Tentang Smart Traffic Vision</h1>
-        <div class="about-card">
-          <h4>Visi Kami</h4>
-          <p>
-            Menjadi pionir dalam solusi manajemen lalu lintas cerdas yang inovatif,
-            aman, dan efisien untuk kota-kota modern. Kami berkomitmen untuk mengurangi
-            kepadatan lalu lintas, meningkatkan keselamatan berkendara, dan memberikan
-            informasi real-time yang akurat kepada masyarakat.
-          </p>
+    <!-- HEADER -->
+    <div class="container text-center mt-5 mb-5">
+        <h1 class="hero-title display-4">Tentang Kami</h1>
+        <p class="hero-subtitle">
+            Mengenal lebih dekat visi, misi, dan teknologi di balik Smart Traffic Vision.
+        </p>
+    </div>
 
-          <h4>Misi Kami</h4>
-          <ul>
-            <li>Membangun sistem deteksi lalu lintas berbasis kecerdasan buatan.</li>
-            <li>Menyediakan data analisis lalu lintas yang mendalam dan mudah dipahami.</li>
-            <li>Mengembangkan platform yang responsif dan user-friendly untuk web dan mobile.</li>
-            <li>Berkolaborasi dengan pemerintah daerah dan komunitas untuk menciptakan lingkungan lalu lintas yang lebih baik.</li>
-          </ul>
-
-          <h4>Teknologi yang Kami Gunakan</h4>
-          <p>
-            Smart Traffic Vision dikembangkan menggunakan kombinasi teknologi canggih:
-          </p>
-          <ul>
-            <li><strong>Backend:</strong> Flask (Python) untuk RESTful API dan manajemen data.</li>
-            <li><strong>Frontend Web:</strong> HTML, CSS (Bootstrap 5), dan JavaScript (Leaflet.js, Chart.js) untuk antarmuka pengguna interaktif.</li>
-            <li><strong>Mobile App:</strong> Flutter untuk aplikasi Android dan iOS yang responsif.</li>
-            <li><strong>Database:</strong> MySQL untuk penyimpanan data yang efisien.</li>
-            <li><strong>Deteksi Objek:</strong> Algoritma AI untuk menganalisis video CCTV dan mendeteksi kepadatan lalu lintas.</li>
-          </ul>
-
-          <h4>Tim Kami</h4>
-          <p>
-            Kami adalah tim mahasiswa Teknik Informatika dari Kelompok 3 5B yang berdedikasi
-            untuk menciptakan solusi teknologi yang bermanfaat bagi masyarakat.
-          </p>
-          <ul>
-            <li><strong>Ketua Tim:</strong> Muhammad Fariz Alfattah</li>
-            <li><strong>Anggota Tim:</strong> Nadhif Nuf Fathin, Bening Cahya Aura, Fajrina Nur Haliza.</li>
-            <li><strong>Dosen Pembimbing:</strong> - </li>
-          </ul>
+    <!-- MAIN CONTENT -->
+    <div class="container mb-5">
+        
+        <!-- VISI & MISI -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="custom-card">
+                    <h4 class="section-title"><i data-lucide="eye"></i> Visi Kami</h4>
+                    <p style="color: #b0b0b0;">
+                        Menjadi pionir dalam solusi manajemen lalu lintas cerdas yang inovatif,
+                        aman, dan efisien untuk kota-kota modern. Kami berkomitmen untuk mengurangi
+                        kepadatan lalu lintas, meningkatkan keselamatan berkendara, dan memberikan
+                        informasi real-time yang akurat kepada masyarakat.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="custom-card">
+                    <h4 class="section-title"><i data-lucide="target"></i> Misi Kami</h4>
+                    <ul class="list-unstyled" style="color: #b0b0b0;">
+                        <li class="mb-2"><i data-lucide="check-circle" size="16" class="text-info me-2"></i>Membangun sistem deteksi berbasis AI.</li>
+                        <li class="mb-2"><i data-lucide="check-circle" size="16" class="text-info me-2"></i>Menyediakan analisis data mendalam.</li>
+                        <li class="mb-2"><i data-lucide="check-circle" size="16" class="text-info me-2"></i>Platform responsif Web & Mobile.</li>
+                        <li class="mb-2"><i data-lucide="check-circle" size="16" class="text-info me-2"></i>Kolaborasi untuk kota yang lebih baik.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
-    </main>
 
-    <!-- ===== FOOTER ===== -->
+        <!-- TEKNOLOGI -->
+        <h3 class="text-white fw-bold mb-4 text-center">Teknologi Kami</h3>
+        <!-- Menggunakan justify-content-center agar kartu di baris bawah berada di tengah -->
+        <div class="row g-4 justify-content-center mb-5">
+            <div class="col-lg-4 col-md-6">
+                <div class="tech-card">
+                    <div class="tech-icon-box"><i data-lucide="code-2" class="tech-icon"></i></div>
+                    <div class="tech-text">
+                        <strong>Backend</strong>
+                        <span>Flask (Python) RESTful API</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="tech-card">
+                    <div class="tech-icon-box"><i data-lucide="layout" class="tech-icon"></i></div>
+                    <div class="tech-text">
+                        <strong>Frontend Web</strong>
+                        <span>Bootstrap 5 & Chart.js</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="tech-card">
+                    <div class="tech-icon-box"><i data-lucide="smartphone" class="tech-icon"></i></div>
+                    <div class="tech-text">
+                        <strong>Mobile App</strong>
+                        <span>Flutter (Android/iOS)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="tech-card">
+                    <div class="tech-icon-box"><i data-lucide="database" class="tech-icon"></i></div>
+                    <div class="tech-text">
+                        <strong>Database</strong>
+                        <span>MySQL Storage</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="tech-card">
+                    <div class="tech-icon-box"><i data-lucide="video" class="tech-icon"></i></div>
+                    <div class="tech-text">
+                        <strong>AI Detection</strong>
+                        <span>Computer Vision & YOLO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIM KAMI -->
+        <div class="mt-5">
+            <h3 class="text-white fw-bold mb-2 text-center">Tim Pengembang</h3>
+            <p class="text-center text-info mb-4 fw-medium" style="letter-spacing: 0.5px;">
+                Kelompok 3 - Kelas 5B Teknik Informatika
+            </p>
+            
+            <div class="row justify-content-center g-4">
+                <div class="col-lg-3 col-sm-6">
+                    <div class="team-card">
+                        <div class="avatar-placeholder">MF</div>
+                        <h5 class="text-white mb-1">M. Fariz Alfattah</h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="team-card">
+                        <div class="avatar-placeholder">NN</div>
+                        <h5 class="text-white mb-1">Nadhif Nuf Fathin</h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="team-card">
+                        <div class="avatar-placeholder">BC</div>
+                        <h5 class="text-white mb-1">Bening Cahya Aura</h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="team-card">
+                        <div class="avatar-placeholder">FN</div>
+                        <h5 class="text-white mb-1">Fajrina Nur Haliza</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
     <footer class="text-center">
-      <div class="container">
-        <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
-      </div>
+        <div class="container">
+            <small>© 2025 Smart Traffic Vision | Powered by Kelompok 3 5B Teknik Informatika</small>
+        </div>
     </footer>
 
-    <!-- JS -->
+    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
 </html>

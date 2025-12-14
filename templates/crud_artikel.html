@@ -81,6 +81,12 @@
         color: #ffffff;
       }
 
+      /* Style khusus untuk input datetime agar ikon kalender terlihat */
+      input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+      }
+
       .preview-container {
         margin-top: 20px;
         text-align: center;
@@ -92,7 +98,7 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
         display: block;
         margin: 0 auto;
-        object-fit: contain; /* Menggunakan contain agar gambar tidak terpotong */
+        object-fit: contain; 
       }
       .current-image-preview {
         max-width: 100%;
@@ -102,7 +108,7 @@
         display: block;
         margin: 0 auto;
         margin-bottom: 20px;
-        object-fit: contain; /* Menggunakan contain agar gambar tidak terpotong */
+        object-fit: contain; 
       }
 
       .btn-group {
@@ -176,22 +182,35 @@
       <div class="form-card mx-auto" style="max-width: 700px;">
         <h3>{{ 'Edit' if mode == 'edit' else 'Tambah' }} Artikel</h3>
         <form method="post" enctype="multipart/form-data">
+          
+          <!-- Input Judul -->
           <div class="mb-3">
             <label for="judulInput" class="form-label">Judul Artikel</label>
             <input type="text" name="judul" class="form-control" id="judulInput" value="{{ artikel.judul if artikel else '' }}" required>
           </div>
 
+          <!-- Input Tanggal Publish (BARU) -->
+          <div class="mb-3">
+            <label for="tanggalInput" class="form-label">Tanggal Publish</label>
+            <input type="datetime-local" name="tanggal" class="form-control" id="tanggalInput"
+                   value="{{ artikel.tanggal.strftime('%Y-%m-%dT%H:%M') if artikel and artikel.tanggal else '' }}" required>
+            <small class="text-muted">Format: Tanggal/Bulan/Tahun Jam:Menit (AM/PM)</small>
+          </div>
+
+          <!-- Input Isi Artikel -->
           <div class="mb-3">
             <label for="isiInput" class="form-label">Isi Artikel</label>
             <textarea name="isi" class="form-control" id="isiInput" rows="8" required>{{ artikel.isi if artikel else '' }}</textarea>
           </div>
 
+          <!-- Input Gambar -->
           <div class="mb-3">
             <label for="gambarInput" class="form-label">Gambar Utama</label>
             <input type="file" class="form-control" name="gambar" id="gambarInput" accept="image/*">
             <small class="form-text text-muted mt-2">Ukuran gambar maksimal 2MB.</small>
           </div>
 
+          <!-- Preview Gambar Lama -->
           {% if mode == 'edit' and artikel and artikel.gambar %}
             <div class="preview-container mb-4">
               <p class="text-muted mb-2">Gambar Saat Ini:</p>
@@ -199,11 +218,13 @@
             </div>
           {% endif %}
 
+          <!-- Preview Gambar Baru -->
           <div class="preview-container mb-4" id="newImagePreviewContainer" style="display: none;">
             <p class="text-muted mb-2">Preview Gambar Baru:</p>
             <img id="preview" src="#" alt="Preview Gambar Baru">
           </div>
 
+          <!-- Tombol Aksi -->
           <div class="mt-4 btn-group">
             <a href="{{ url_for('kelola_artikel') }}" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">{{ 'Update Artikel' if mode == 'edit' else 'Tambah & Simpan' }}</button>
