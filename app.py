@@ -5,7 +5,12 @@ import mysql.connector
 import os
 from functools import wraps
 import datetime
-import random 
+import random
+import cv2
+import base64
+import numpy as np
+from ultralytics import YOLO
+from cap_from_youtube import cap_from_youtube
 
 app = Flask(__name__)
 app.secret_key = "smart_traffic_secret"
@@ -15,6 +20,17 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# ===== LOAD YOLO MODEL =====
+print("Sedang memuat Model AI (YOLO)...")
+try:
+    model = YOLO("yolo11n.pt") 
+    print("Model AI Siap!")
+except Exception as e:
+    print(f"Error loading YOLO: {e}")
+
+# COCO Class ID: 2=Car, 3=Motorcycle, 5=Bus, 7=Truck
+VEHICLE_CLASSES = [2, 3, 5, 7]
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -32,7 +48,7 @@ def get_db_cursor(dictionary=True):
         db.reconnect()
     return db.cursor(dictionary=dictionary)
 
-# ===== DECORATORS (KEAMANAN) =====
+# ===== DECORATORS =====
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -51,97 +67,276 @@ def api_login_required(f):
     return decorated
 
 # =========================================================================
-# ===== SHARED LOGIC (LOGIKA DATA) =====
+# ===== AI ENGINE (REAL TIME DETECTION) =====
+# =========================================================================
+
+def get_real_vehicle_count(video_url):
+    """
+    Mengambil snapshot dari YouTube dan menghitung kendaraan menggunakan YOLO.
+    Digunakan untuk data statistik angka saja.
+    """
+    counts = {'mobil': 0, 'motor': 0, 'bus': 0, 'truk': 0}
+    try:
+        # Resolusi '360p' agar proses download dan deteksi cepat
+        cap = cap_from_youtube(video_url, '360p')
+        if not cap.isOpened(): return counts
+
+        ret, frame = cap.read()
+        if ret:
+            results = model(frame, classes=VEHICLE_CLASSES, verbose=False)
+            for r in results:
+                for box in r.boxes:
+                    cls = int(box.cls[0])
+                    if cls == 2: counts['mobil'] += 1
+                    elif cls == 3: counts['motor'] += 1
+                    elif cls == 5: counts['bus'] += 1
+                    elif cls == 7: counts['truk'] += 1
+        cap.release()
+        return counts
+    except Exception as e:
+        print(f"Error Deteksi: {e}")
+        return counts
+
+def get_annotated_frame(video_url):
+    """
+    Sama seperti di atas, tapi mengembalikan GAMBAR dengan KOTAK MERAH (Base64).
+    Digunakan untuk fitur 'Deteksi Kendaraan' (Visual) di Dashboard.
+    """
+    counts = {'mobil': 0, 'motor': 0, 'bus': 0, 'truk': 0}
+    img_str = None
+    
+    try:
+        cap = cap_from_youtube(video_url, '360p')
+        if not cap.isOpened(): return counts, None
+
+        ret, frame = cap.read()
+        if ret:
+            results = model(frame, classes=VEHICLE_CLASSES, verbose=False)
+            
+            # Gambar Kotak (Plotting) - Ini yang membuat kotak merah/warna-warni
+            annotated_frame = results[0].plot()
+            
+            # Hitung Jumlah
+            for r in results:
+                for box in r.boxes:
+                    cls = int(box.cls[0])
+                    if cls == 2: counts['mobil'] += 1
+                    elif cls == 3: counts['motor'] += 1
+                    elif cls == 5: counts['bus'] += 1
+                    elif cls == 7: counts['truk'] += 1
+            
+            # Encode ke Base64 agar bisa dikirim ke HTML img tag
+            _, buffer = cv2.imencode('.jpg', annotated_frame)
+            img_str = base64.b64encode(buffer).decode('utf-8')
+            
+        cap.release()
+        return counts, img_str
+
+    except Exception as e:
+        print(f"Error Annotasi: {e}")
+        return counts, None
+
+# =========================================================================
+# ===== SHARED LOGIC =====
 # =========================================================================
 
 def fetch_cctv_list():
+    # SAYA PERBAIKI BAGIAN INI AGAR TIDAK ERROR (Link YouTube diisi)
     return [
-        { "id": 1, "name": "CCTV Pontianak (Simpang Garuda)", "lat": -0.0245, "lon": 109.3406, "status": "Aktif", "stream_url": "https://www.youtube.com/embed/1s9cRcqZf58" },
-        { "id": 2, "name": "CCTV Pontianak (Tugu Khatulistiwa)", "lat": 0.0000, "lon": 109.3300, "status": "Aktif", "stream_url": "https://www.youtube.com/embed/oqSqC-gOALo" },
-        { "id": 3, "name": "CCTV Demak (Alun-Alun)", "lat": -6.8906, "lon": 110.6385, "status": "Aktif", "stream_url": "https://www.youtube.com/embed/mHk5UKckU7M" },
-        { "id": 4, "name": "CCTV Demak (Pasar Bintoro)", "lat": -6.8850, "lon": 110.6400, "status": "Aktif", "stream_url": "https://www.youtube.com/embed/7c4CsGkmBu8" },
-        { "id": 5, "name": "CCTV Demak (Pertigaan Trengguli)", "lat": -6.8700, "lon": 110.6500, "status": "Aktif", "stream_url": "https://www.youtube.com/embed/5nw3G2jtWaU" },
+        { 
+            "id": 1, "name": "CCTV Pontianak (Simpang Garuda)", "status": "Aktif", 
+            "lat": -0.0245, "lon": 109.3406,
+            "stream_url": "https://www.youtube.com/embed/1s9cRcqZf58", 
+            "youtube_link": "https://www.youtube.com/watch?v=1s9cRcqZf58" 
+        },
+        { 
+            "id": 2, "name": "CCTV Pontianak (Tugu Khatulistiwa)", "status": "Aktif",
+            "lat": 0.0000, "lon": 109.3300,
+            "stream_url": "https://www.youtube.com/embed/oqSqC-gOALo", 
+            "youtube_link": "https://www.youtube.com/watch?v=oqSqC-gOALo" 
+        },
+        { 
+            "id": 3, "name": "CCTV Demak (Alun-Alun)", "status": "Aktif",
+            "lat": -6.8906, "lon": 110.6385,
+            "stream_url": "https://www.youtube.com/embed/mHk5UKckU7M", 
+            "youtube_link": "https://www.youtube.com/watch?v=mHk5UKckU7M" 
+        },
+        { 
+            "id": 4, "name": "CCTV Demak (Pasar Bintoro)", "status": "Aktif",
+            "lat": -6.8850, "lon": 110.6400,
+            "stream_url": "https://www.youtube.com/embed/7c4CsGkmBu8", 
+            "youtube_link": "https://www.youtube.com/watch?v=7c4CsGkmBu8" 
+        },
+        { 
+            "id": 5, "name": "CCTV Demak (Pertigaan Trengguli)", "status": "Aktif",
+            "lat": -6.8700, "lon": 110.6500,
+            "stream_url": "https://www.youtube.com/embed/5nw3G2jtWaU", 
+            "youtube_link": "https://www.youtube.com/watch?v=5nw3G2jtWaU" 
+        },
     ]
 
 def logic_get_summary(cctv_id):
-    # JIKA TIDAK ADA CCTV YANG DIPILIH, KEMBALIKAN KOSONG (-)
+    # Default Kosong
     if not cctv_id:
-        return {
-            "kendaraan_hari_ini": "-", 
-            "kepadatan_tertinggi": "-", 
-            "rata_rata_kecepatan": "-", 
-            "kamera_aktif": "-" 
-        }
+        return { "kendaraan_hari_ini": "-", "kepadatan_tertinggi": "-", "rata_rata_kecepatan": "-", "kamera_aktif": "-" }
 
-    # Jika ada CCTV dipilih, hitung data (Simulasi)
     try:
         cctv_id = int(cctv_id)
-        # Total kamera selalu 5 (tetap tampil meski filter aktif)
-        active_cams = "5" 
+        cctv_data = next((item for item in fetch_cctv_list() if item["id"] == cctv_id), None)
         
-        if cctv_id == 1:
-            return {"kendaraan_hari_ini": "5.120", "kepadatan_tertinggi": "92%", "rata_rata_kecepatan": "25 km/j", "kamera_aktif": active_cams}
-        elif cctv_id == 2:
-            return {"kendaraan_hari_ini": "1.200", "kepadatan_tertinggi": "40%", "rata_rata_kecepatan": "60 km/j", "kamera_aktif": active_cams}
-        else:
+        if cctv_data:
+            # === GUNAKAN DATA ASLI DARI YOLO (Tanpa Gambar) ===
+            real_counts = get_real_vehicle_count(cctv_data['youtube_link'])
+            
+            total_kendaraan = sum(real_counts.values())
+            
+            # Hitung Kepadatan (Asumsi 1 frame penuh = 40 kendaraan)
+            kepadatan_val = min(100, int((total_kendaraan / 40) * 100))
+            
+            # Estimasi Kecepatan (Makin padat = makin pelan)
+            if total_kendaraan == 0:
+                kecepatan = "Lancar"
+            else:
+                kecepatan_val = max(5, 80 - (kepadatan_val * 0.7))
+                kecepatan = f"{int(kecepatan_val)} km/j"
+
             return {
-                "kendaraan_hari_ini": str(random.randint(2000, 4000)),
-                "kepadatan_tertinggi": str(random.randint(50, 80)) + "%",
-                "rata_rata_kecepatan": str(random.randint(30, 50)) + " km/j",
-                "kamera_aktif": active_cams
+                "kendaraan_hari_ini": str(total_kendaraan), 
+                "kepadatan_tertinggi": f"{kepadatan_val}%", 
+                "rata_rata_kecepatan": kecepatan, 
+                "kamera_aktif": "5"
             }
-    except ValueError:
-        return {"kendaraan_hari_ini": "-", "kepadatan_tertinggi": "-", "rata_rata_kecepatan": "-", "kamera_aktif": "-"}
+    except Exception as e:
+        print(f"Logic Error: {e}")
+    
+    return { "kendaraan_hari_ini": "0", "kepadatan_tertinggi": "0%", "rata_rata_kecepatan": "-", "kamera_aktif": "5" }
+
+def logic_get_vehicle(cctv_id, period):
+    labels = ['Mobil','Motor','Bus','Truk']
+    if not cctv_id:
+        return {"labels": labels, "data": [0, 0, 0, 0]}
+
+    try:
+        cctv_id = int(cctv_id)
+        cctv_data = next((item for item in fetch_cctv_list() if item["id"] == cctv_id), None)
+        
+        if cctv_data:
+            # === GUNAKAN DATA ASLI DARI YOLO ===
+            # (Untuk Pie Chart Distribusi Kendaraan)
+            real_counts = get_real_vehicle_count(cctv_data['youtube_link'])
+            return {
+                "labels": labels, 
+                "data": [real_counts['mobil'], real_counts['motor'], real_counts['bus'], real_counts['truk']]
+            }
+    except:
+        pass
+
+    return {"labels": labels, "data": [0, 0, 0, 0]}
 
 def logic_get_traffic(cctv_id, period):
-    # Label Sumbu X
+    # Untuk Tren Grafik, kita masih simulasi karena belum ada DB history
     if period == 'mingguan': labels = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
     elif period == 'bulanan': labels = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4']
     else: labels = ['06:00','08:00','10:00','12:00','14:00','16:00','18:00']
 
-    # JIKA TIDAK ADA CCTV, KEMBALIKAN DATA KOSONG (Array 0)
-    if not cctv_id:
-        return {"labels": labels, "kepadatan": [0] * len(labels)}
+    if not cctv_id: return {"labels": labels, "kepadatan": [0] * len(labels)}
 
     data_points = len(labels)
-    kepadatan = []
-    
-    try:
-        cctv_id = int(cctv_id)
-        base_val = 70 if cctv_id == 1 else (25 if cctv_id == 2 else 50)
-        for _ in range(data_points):
-            kepadatan.append(max(0, min(100, base_val + random.randint(-15, 15))))
-    except:
-        kepadatan = [0] * data_points
+    # Simulasi history (karena AI hanya real-time saat ini)
+    kepadatan = [random.randint(20, 80) for _ in range(data_points)]
 
     return {"labels": labels, "kepadatan": kepadatan}
 
-def logic_get_vehicle(cctv_id, period):
-    labels = ['Mobil','Motor','Bus','Truk']
+# =========================================================================
+# ===== ROUTES & API =====
+# =========================================================================
+
+# --- API UNTUK DETEKSI GAMBAR & KOTAK MERAH (DIPANGGIL TOMBOL DETEKSI) ---
+@app.route('/api/analyze_cctv', methods=['GET'])
+def api_analyze_cctv():
+    cctv_id = request.args.get('cctv_id')
+    if not cctv_id: return jsonify({"error": "No ID"}), 400
     
-    # JIKA TIDAK ADA CCTV, KEMBALIKAN DATA KOSONG
-    if not cctv_id:
-        return {"labels": labels, "data": [0, 0, 0, 0]}
-
-    data = [55, 30, 8, 7] # Default base
-
     try:
         cctv_id = int(cctv_id)
-        if cctv_id == 1: data = [45, 45, 5, 5]
-        elif cctv_id == 5: data = [20, 10, 15, 55]
-        else: data = [50, 30, 10, 10]
-    except:
-        pass
+        cctv_data = next((item for item in fetch_cctv_list() if item["id"] == cctv_id), None)
+        
+        if cctv_data:
+            # Panggil fungsi yang mengembalikan GAMBAR dengan KOTAK
+            counts, img_base64 = get_annotated_frame(cctv_data['youtube_link'])
+            
+            total = sum(counts.values())
+            
+            return jsonify({
+                "counts": counts,
+                "total": total,
+                "image": img_base64  # Ini string base64 gambar berkotak merah
+            })
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
+    return jsonify({"error": "Not Found"}), 404
 
-    modifier = 0 if period == 'harian' else (5 if period == 'mingguan' else 15)
-    data = [max(0, x + random.randint(-modifier, modifier)) for x in data]
+# --- API Dashboard (Data Angka) ---
+@app.route('/api/admin/dashboard_summary', methods=['GET'])
+@api_login_required
+def api_admin_dashboard_summary():
+    return jsonify(logic_get_summary(request.args.get('cctv_id')))
 
-    return {"labels": labels, "data": data}
+@app.route('/api/public/dashboard_summary', methods=['GET'])
+def api_public_dashboard_summary():
+    return jsonify(logic_get_summary(request.args.get('cctv_id')))
 
-# =========================================================================
-# ===== ROUTES WEB (Render Template) =====
-# =========================================================================
+@app.route('/api/admin/traffic_data', methods=['GET'])
+@api_login_required
+def api_admin_traffic_data():
+    return jsonify(logic_get_traffic(request.args.get('cctv_id'), request.args.get('period')))
 
+@app.route('/api/public/traffic_data', methods=['GET'])
+def api_public_traffic_data():
+    return jsonify(logic_get_traffic(request.args.get('cctv_id'), request.args.get('period')))
+
+@app.route('/api/admin/vehicle_distribution', methods=['GET'])
+@api_login_required
+def api_admin_vehicle_distribution():
+    return jsonify(logic_get_vehicle(request.args.get('cctv_id'), request.args.get('period')))
+
+@app.route('/api/public/vehicle_distribution', methods=['GET'])
+def api_public_vehicle_distribution():
+    return jsonify(logic_get_vehicle(request.args.get('cctv_id'), request.args.get('period')))
+
+@app.route('/api/cctv_locations', methods=['GET'])
+def get_cctv_locations():
+    return jsonify(fetch_cctv_list()), 200
+
+# API Statistik Halaman User
+@app.route('/api/public/analytics_data', methods=['GET'])
+def api_public_analytics_data():
+    period = request.args.get('period', 'harian')
+    cctv_id = request.args.get('cctv_id')
+    
+    if period == 'mingguan':
+        labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
+    elif period == 'bulanan':
+        labels = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4']
+    else: 
+        labels = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00']
+
+    data_len = len(labels)
+    
+    if not cctv_id:
+        return jsonify({"labels": labels, "traffic": [0] * data_len})
+
+    # Simulasi history (karena AI hanya real-time saat ini)
+    traffic = [random.randint(20, 90) for _ in range(data_len)]
+
+    return jsonify({
+        "labels": labels,
+        "traffic": traffic
+    })
+
+# --- Standard Routes ---
 @app.route('/')
 def index():
     cursor = get_db_cursor()
@@ -188,7 +383,6 @@ def admin_dashboard():
     cctv_list = fetch_cctv_list()
     return render_template('admin_dashboard.html', latest_articles=latest_articles, cctv_list=cctv_list)
 
-# --- ARTIKEL ROUTES ---
 @app.route('/kelola_artikel')
 @login_required
 def kelola_artikel():
@@ -204,60 +398,46 @@ def kelola_artikel():
     cursor.close()
     return render_template('kelola_artikel.html', artikel=data, page=page, total_pages=total_pages, per_page=per_page)
 
-# --- Update Route Tambah Artikel ---
 @app.route('/artikel/tambah', methods=['GET', 'POST'])
 @login_required
 def tambah_artikel():
     if request.method == 'POST':
         judul = request.form['judul']
         isi = request.form['isi']
-        tanggal_str = request.form['tanggal'] # Ambil tanggal dari form (String)
-
+        tanggal_str = request.form['tanggal']
         file = request.files.get('gambar')
         filename = None
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
         cursor = get_db_cursor()
-        cursor.execute(
-            "INSERT INTO artikel (judul, isi, gambar, published, tanggal) VALUES (%s, %s, %s, %s, %s)",
-            (judul, isi, filename, 0, tanggal_str) # Gunakan tanggal_str dari input
-        )
+        cursor.execute("INSERT INTO artikel (judul, isi, gambar, published, tanggal) VALUES (%s, %s, %s, %s, %s)", (judul, isi, filename, 0, tanggal_str))
         db.commit()
         cursor.close()
         flash("Artikel berhasil ditambahkan!", "success")
         return redirect(url_for('kelola_artikel'))
-
     return render_template('crud_artikel.html', mode='tambah', artikel=None)
 
-# --- Update Route Edit Artikel ---
 @app.route('/artikel/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_artikel(id):
     next_page = request.args.get('next', url_for('kelola_artikel'))
     cursor = get_db_cursor()
-
     if request.method == 'POST':
         judul = request.form['judul']
         isi = request.form['isi']
-        tanggal_str = request.form['tanggal'] # Ambil tanggal baru dari form
-
+        tanggal_str = request.form['tanggal']
         file = request.files.get('gambar')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # Update dengan gambar baru + tanggal baru
             cursor.execute("UPDATE artikel SET judul=%s, isi=%s, gambar=%s, tanggal=%s WHERE id=%s", (judul, isi, filename, tanggal_str, id))
         else:
-            # Update tanpa gambar baru + tanggal baru
             cursor.execute("UPDATE artikel SET judul=%s, isi=%s, tanggal=%s WHERE id=%s", (judul, isi, tanggal_str, id))
-        
         db.commit()
         cursor.close()
         flash("Artikel berhasil diperbarui!", "success")
         return redirect(next_page)
-
     cursor.execute("SELECT * FROM artikel WHERE id=%s", (id,))
     data = cursor.fetchone()
     cursor.close()
@@ -314,15 +494,13 @@ def read_artikel():
 @app.route('/artikel/<int:id>')
 def view_artikel_detail(id):
     cursor = get_db_cursor()
-    # Query untuk mengambil data 1 artikel berdasarkan ID
     cursor.execute("SELECT id, judul, isi, gambar, tanggal FROM artikel WHERE id=%s AND published=1", (id,))
     artikel = cursor.fetchone()
     cursor.close()
-    
     if artikel:
         return render_template('artikel_detail.html', artikel=artikel)
     else:
-        flash("Artikel tidak ditemukan atau belum dipublikasikan.", "danger")
+        flash("Artikel tidak ditemukan.", "danger")
         return redirect(url_for('read_artikel'))
 
 @app.route('/about')
@@ -336,89 +514,6 @@ def cctv_page():
 @app.route('/static-page')
 def static_page():
     return render_template('static.html')
-
-# =========================================================================
-# ===== API ENDPOINTS =====
-# =========================================================================
-
-# --- 1. API UNTUK DASHBOARD (Admin & Public) ---
-# Menggunakan 'logic_' yang mengembalikan data kosong jika cctv_id null
-
-@app.route('/api/admin/dashboard_summary', methods=['GET'])
-@api_login_required
-def api_admin_dashboard_summary():
-    return jsonify(logic_get_summary(request.args.get('cctv_id')))
-
-@app.route('/api/admin/traffic_data', methods=['GET'])
-@api_login_required
-def api_admin_traffic_data():
-    return jsonify(logic_get_traffic(request.args.get('cctv_id'), request.args.get('period')))
-
-@app.route('/api/admin/vehicle_distribution', methods=['GET'])
-@api_login_required
-def api_admin_vehicle_distribution():
-    return jsonify(logic_get_vehicle(request.args.get('cctv_id'), request.args.get('period')))
-
-@app.route('/api/public/dashboard_summary', methods=['GET'])
-def api_public_dashboard_summary():
-    return jsonify(logic_get_summary(request.args.get('cctv_id')))
-
-@app.route('/api/public/traffic_data', methods=['GET'])
-def api_public_traffic_data():
-    return jsonify(logic_get_traffic(request.args.get('cctv_id'), request.args.get('period')))
-
-@app.route('/api/public/vehicle_distribution', methods=['GET'])
-def api_public_vehicle_distribution():
-    return jsonify(logic_get_vehicle(request.args.get('cctv_id'), request.args.get('period')))
-
-@app.route('/api/public/analytics_data', methods=['GET'])
-def api_public_analytics_data():
-    period = request.args.get('period', 'harian')
-    cctv_id = request.args.get('cctv_id') # Ambil parameter CCTV ID
-    
-    # 1. Tentukan Labels Sumbu X
-    if period == 'mingguan':
-        labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
-    elif period == 'bulanan':
-        labels = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4']
-    else: # Harian
-        labels = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00']
-
-    data_len = len(labels)
-    traffic = []
-
-    # 2. LOGIKA: Jika tidak ada CCTV dipilih, kembalikan data 0
-    if not cctv_id:
-        return jsonify({
-            "labels": labels,
-            "traffic": [0] * data_len
-        })
-
-    # 3. Jika ada CCTV, Generate Data Simulasi
-    try:
-        cctv_id = int(cctv_id)
-        # Variasi base value berdasarkan ID agar grafik terlihat beda tiap CCTV
-        if cctv_id == 1: base_val = 75
-        elif cctv_id == 2: base_val = 30
-        elif cctv_id == 3: base_val = 55
-        else: base_val = 45
-        
-        for _ in range(data_len):
-            val = base_val + random.randint(-15, 20) 
-            val = max(0, min(100, val)) # Clip antara 0-100
-            traffic.append(val)
-            
-    except:
-        traffic = [0] * data_len
-
-    return jsonify({
-        "labels": labels,
-        "traffic": traffic
-    })
-# --- 3. API UMUM ---
-@app.route('/api/cctv_locations', methods=['GET'])
-def get_cctv_locations():
-    return jsonify(fetch_cctv_list()), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
